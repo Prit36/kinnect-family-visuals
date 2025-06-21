@@ -1,5 +1,5 @@
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useEffect } from 'react';
 import {
   ReactFlow,
   MiniMap,
@@ -22,16 +22,47 @@ const nodeTypes: NodeTypes = {
 };
 
 const FamilyTree: React.FC = () => {
-  const { nodes, edges, updateNodePosition, darkMode } = useFamilyTreeStore();
+  const { 
+    nodes, 
+    edges, 
+    updateNodePosition, 
+    darkMode, 
+    getFilteredPeople, 
+    searchFilters,
+    people 
+  } = useFamilyTreeStore();
+  
   const [flowNodes, setNodes, onNodesChange] = useNodesState(nodes);
   const [flowEdges, setEdges, onEdgesChange] = useEdgesState(edges);
 
+  // Filter nodes based on search filters
+  const filteredPeople = getFilteredPeople();
+  const filteredNodeIds = new Set(filteredPeople.map(person => person.id));
+  
+  const visibleNodes = useMemo(() => {
+    if (!searchFilters.searchTerm && 
+        !searchFilters.gender && 
+        searchFilters.isAlive === undefined && 
+        searchFilters.hasImage === undefined) {
+      return flowNodes;
+    }
+    
+    return flowNodes.filter(node => filteredNodeIds.has(node.id));
+  }, [flowNodes, filteredNodeIds, searchFilters]);
+
+  const visibleEdges = useMemo(() => {
+    const visibleNodeIds = new Set(visibleNodes.map(node => node.id));
+    return flowEdges.filter(edge => 
+      visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target)
+    );
+  }, [flowEdges, visibleNodes]);
+
   // Sync store state with React Flow state
-  React.useEffect(() => {
+  useEffect(() => {
     setNodes(nodes);
   }, [nodes, setNodes]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setEdges(edges);
   }, [edges, setEdges]);
 
@@ -68,8 +99,8 @@ const FamilyTree: React.FC = () => {
   return (
     <div className={`w-full h-full ${backgroundClass}`}>
       <ReactFlow
-        nodes={flowNodes}
-        edges={flowEdges}
+        nodes={visibleNodes}
+        edges={visibleEdges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
@@ -119,6 +150,20 @@ const FamilyTree: React.FC = () => {
           className="opacity-60"
         />
       </ReactFlow>
+      
+      {/* Search Results Counter */}
+      {(searchFilters.searchTerm || searchFilters.gender || 
+        searchFilters.isAlive !== undefined || searchFilters.hasImage !== undefined) && (
+        <div className={`absolute top-4 left-4 z-10 px-4 py-2 rounded-lg shadow-lg ${
+          darkMode 
+            ? 'bg-gray-800/90 text-gray-200 border border-gray-600' 
+            : 'bg-white/90 text-gray-800 border border-gray-200'
+        } backdrop-blur-sm`}>
+          <p className="text-sm font-medium">
+            Showing {visibleNodes.length} of {people.length} family members
+          </p>
+        </div>
+      )}
     </div>
   );
 };

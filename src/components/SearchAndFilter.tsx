@@ -23,7 +23,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useFamilyTreeStore } from '../store/familyTreeStore';
 
 const SearchAndFilter: React.FC = () => {
-  const { searchFilters, setSearchFilters, getFilteredPeople } = useFamilyTreeStore();
+  const { searchFilters, setSearchFilters, getFilteredPeople, darkMode } = useFamilyTreeStore();
   const filteredCount = getFilteredPeople().length;
   
   const hasActiveFilters = searchFilters.gender || 
@@ -45,18 +45,22 @@ const SearchAndFilter: React.FC = () => {
   return (
     <div className="flex items-center space-x-2">
       <div className="relative flex-1 max-w-md">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+        <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} size={16} />
         <Input
           placeholder="Search family members..."
           value={searchFilters.searchTerm}
           onChange={(e) => setSearchFilters({ searchTerm: e.target.value })}
-          className="pl-10"
+          className={`pl-10 ${darkMode ? 'bg-gray-800/50 border-gray-600 text-gray-200 placeholder-gray-400' : 'bg-white/80 backdrop-blur-sm'}`}
         />
       </div>
 
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="outline" size="sm" className="relative">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className={`relative ${darkMode ? 'bg-gray-800/50 border-gray-600 text-gray-200 hover:bg-gray-700' : 'bg-white/80 backdrop-blur-sm border-gray-200'}`}
+          >
             <Filter size={16} className="mr-2" />
             Filters
             {hasActiveFilters && (
@@ -66,15 +70,15 @@ const SearchAndFilter: React.FC = () => {
             )}
           </Button>
         </SheetTrigger>
-        <SheetContent>
+        <SheetContent className={darkMode ? 'bg-gray-800 border-gray-600' : ''}>
           <SheetHeader>
-            <SheetTitle>Filter Family Members</SheetTitle>
+            <SheetTitle className={darkMode ? 'text-gray-200' : ''}>Filter Family Members</SheetTitle>
           </SheetHeader>
           
           <div className="space-y-6 mt-6">
             {hasActiveFilters && (
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">
+                <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                   Showing {filteredCount} members
                 </span>
                 <Button variant="ghost" size="sm" onClick={clearAllFilters}>
@@ -85,15 +89,15 @@ const SearchAndFilter: React.FC = () => {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="gender-filter">Gender</Label>
+              <Label htmlFor="gender-filter" className={darkMode ? 'text-gray-200' : ''}>Gender</Label>
               <Select 
                 value={searchFilters.gender || ''} 
-                onValueChange={(value) => setSearchFilters({ gender: value || undefined })}
+                onValueChange={(value) => setSearchFilters({ gender: (value as 'male' | 'female' | 'other') || undefined })}
               >
-                <SelectTrigger>
+                <SelectTrigger className={darkMode ? 'bg-gray-800 border-gray-600 text-gray-200' : ''}>
                   <SelectValue placeholder="All genders" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className={darkMode ? 'bg-gray-800 border-gray-600' : ''}>
                   <SelectItem value="">All genders</SelectItem>
                   <SelectItem value="male">Male</SelectItem>
                   <SelectItem value="female">Female</SelectItem>
@@ -103,7 +107,7 @@ const SearchAndFilter: React.FC = () => {
             </div>
 
             <div className="space-y-3">
-              <Label>Status</Label>
+              <Label className={darkMode ? 'text-gray-200' : ''}>Status</Label>
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox
@@ -113,7 +117,7 @@ const SearchAndFilter: React.FC = () => {
                       setSearchFilters({ isAlive: checked ? true : undefined })
                     }
                   />
-                  <Label htmlFor="alive-filter" className="text-sm">Living only</Label>
+                  <Label htmlFor="alive-filter" className={`text-sm ${darkMode ? 'text-gray-300' : ''}`}>Living only</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox
@@ -123,7 +127,7 @@ const SearchAndFilter: React.FC = () => {
                       setSearchFilters({ isAlive: checked ? false : undefined })
                     }
                   />
-                  <Label htmlFor="deceased-filter" className="text-sm">Deceased only</Label>
+                  <Label htmlFor="deceased-filter" className={`text-sm ${darkMode ? 'text-gray-300' : ''}`}>Deceased only</Label>
                 </div>
               </div>
             </div>
@@ -137,7 +141,7 @@ const SearchAndFilter: React.FC = () => {
                     setSearchFilters({ hasImage: checked ? true : undefined })
                   }
                 />
-                <Label htmlFor="photo-filter" className="text-sm">Has photo only</Label>
+                <Label htmlFor="photo-filter" className={`text-sm ${darkMode ? 'text-gray-300' : ''}`}>Has photo only</Label>
               </div>
             </div>
           </div>

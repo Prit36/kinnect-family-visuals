@@ -25,7 +25,8 @@ const LayoutControls: React.FC = () => {
     showStatistics, 
     toggleStatistics, 
     isFullscreen, 
-    toggleFullscreen 
+    toggleFullscreen,
+    darkMode 
   } = useFamilyTreeStore();
 
   const getLayoutIcon = (layout: string) => {
@@ -38,24 +39,34 @@ const LayoutControls: React.FC = () => {
     }
   };
 
+  const handleLayoutChange = (value: string) => {
+    console.log('Layout changing to:', value);
+    setLayout(value);
+  };
+
+  const handleFullscreenToggle = () => {
+    console.log('Toggling fullscreen, current state:', isFullscreen);
+    toggleFullscreen();
+  };
+
   return (
     <TooltipProvider>
       <div className="flex items-center space-x-2">
         <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Layout:</span>
-          <Select value={currentLayout} onValueChange={setLayout}>
-            <SelectTrigger className="w-40 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
+          <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Layout:</span>
+          <Select value={currentLayout} onValueChange={handleLayoutChange}>
+            <SelectTrigger className={`w-40 ${darkMode ? 'border-gray-600 bg-gray-800/50 text-gray-200' : 'bg-white/80 backdrop-blur-sm'}`}>
               <div className="flex items-center space-x-2">
                 {getLayoutIcon(currentLayout)}
                 <SelectValue />
               </div>
             </SelectTrigger>
-            <SelectContent className="dark:bg-gray-800 dark:border-gray-600">
+            <SelectContent className={darkMode ? 'bg-gray-800 border-gray-600' : ''}>
               {layoutOptions.map((option) => (
                 <SelectItem 
                   key={option.value} 
                   value={option.value}
-                  className="dark:text-gray-200 dark:hover:bg-gray-700 dark:focus:bg-gray-700"
+                  className={darkMode ? 'text-gray-200 hover:bg-gray-700 focus:bg-gray-700' : ''}
                 >
                   <div className="flex items-center space-x-2">
                     {getLayoutIcon(option.value)}
@@ -73,7 +84,7 @@ const LayoutControls: React.FC = () => {
               variant={showStatistics ? "default" : "outline"}
               size="sm"
               onClick={toggleStatistics}
-              className="dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+              className={darkMode ? 'border-gray-600 bg-gray-800/50 text-gray-200 hover:bg-gray-700' : 'bg-white/80 backdrop-blur-sm'}
             >
               <BarChart3 size={16} />
             </Button>
@@ -88,8 +99,8 @@ const LayoutControls: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={toggleFullscreen}
-              className="dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+              onClick={handleFullscreenToggle}
+              className={darkMode ? 'border-gray-600 bg-gray-800/50 text-gray-200 hover:bg-gray-700' : 'bg-white/80 backdrop-blur-sm'}
             >
               {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
             </Button>

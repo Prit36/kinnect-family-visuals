@@ -1,5 +1,7 @@
+
 import { create } from 'zustand';
 import { Node, Edge } from '@xyflow/react';
+import dagre from 'dagre';
 
 export interface Person extends Record<string, unknown> {
   id: string;
@@ -72,6 +74,136 @@ export interface SearchFilters {
   birthYear?: number;
 }
 
+// Layout calculation functions
+const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB') => {
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
+  
+  const nodeWidth = 280;
+  const nodeHeight = 200;
+  
+  dagreGraph.setGraph({ rankdir: direction, nodesep: 100, ranksep: 150 });
+
+  nodes.forEach((node) => {
+    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+  });
+
+  edges.forEach((edge) => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  dagre.layout(dagreGraph);
+
+  return nodes.map((node) => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+    return {
+      ...node,
+      targetPosition: 'top' as const,
+      sourcePosition: 'bottom' as const,
+      position: {
+        x: nodeWithPosition.x - nodeWidth / 2,
+        y: nodeWithPosition.y - nodeHeight / 2,
+      },
+    };
+  });
+};
+
+const getCircularLayout = (nodes: Node[]) => {
+  const radius = Math.max(300, nodes.length * 30);
+  const centerX = 0;
+  const centerY = 0;
+  
+  return nodes.map((node, index) => {
+    const angle = (index / nodes.length) * 2 * Math.PI;
+    return {
+      ...node,
+      position: {
+        x: centerX + radius * Math.cos(angle),
+        y: centerY + radius * Math.sin(angle),
+      },
+    };
+  });
+};
+
+const getGridLayout = (nodes: Node[]) => {
+  const cols = Math.ceil(Math.sqrt(nodes.length));
+  const nodeWidth = 300;
+  const nodeHeight = 220;
+  
+  return nodes.map((node, index) => {
+    const row = Math.floor(index / cols);
+    const col = index % cols;
+    return {
+      ...node,
+      position: {
+        x: col * nodeWidth,
+        y: row * nodeHeight,
+      },
+    };
+  });
+};
+
+const getRadialLayout = (nodes: Node[], edges: Edge[]) => {
+  // Find root nodes (nodes with no incoming edges)
+  const rootNodes = nodes.filter(node => 
+    !edges.some(edge => edge.target === node.id)
+  );
+  
+  if (rootNodes.length === 0) return getCircularLayout(nodes);
+  
+  const positioned = new Set<string>();
+  const result = [...nodes];
+  
+  // Position root nodes in center
+  rootNodes.forEach((root, index) => {
+    const angle = (index / rootNodes.length) * 2 * Math.PI;
+    const rootRadius = 100;
+    const rootNode = result.find(n => n.id === root.id);
+    if (rootNode) {
+      rootNode.position = {
+        x: rootRadius * Math.cos(angle),
+        y: rootRadius * Math.sin(angle),
+      };
+      positioned.add(root.id);
+    }
+  });
+  
+  // Position children in concentric circles
+  let level = 1;
+  let currentLevel = [...rootNodes.map(n => n.id)];
+  
+  while (currentLevel.length > 0 && positioned.size < nodes.length) {
+    const nextLevel: string[] = [];
+    const levelRadius = 200 + (level * 150);
+    
+    currentLevel.forEach(parentId => {
+      const children = edges
+        .filter(edge => edge.source === parentId)
+        .map(edge => edge.target)
+        .filter(id => !positioned.has(id));
+      
+      children.forEach((childId, index) => {
+        const angle = (index / Math.max(children.length, 1)) * 2 * Math.PI + 
+                     (level * Math.PI / 4); // Offset each level
+        const childNode = result.find(n => n.id === childId);
+        if (childNode) {
+          childNode.position = {
+            x: levelRadius * Math.cos(angle),
+            y: levelRadius * Math.sin(angle),
+          };
+          positioned.add(childId);
+          nextLevel.push(childId);
+        }
+      });
+    });
+    
+    currentLevel = nextLevel;
+    level++;
+  }
+  
+  return result;
+};
+
 export interface FamilyTreeState {
   people: Person[];
   relationships: Relationship[];
@@ -107,6 +239,7 @@ export interface FamilyTreeState {
   generateShareLink: () => string;
   setSearchFilters: (filters: Partial<SearchFilters>) => void;
   getFilteredPeople: () => Person[];
+  applyLayout: () => void;
 }
 
 const initialPeople: Person[] = [
@@ -293,6 +426,7 @@ export const useFamilyTreeStore = create<FamilyTreeState>((set, get) => ({
   toggleStatistics: () => set((state) => ({ showStatistics: !state.showStatistics })),
   setLayout: (layout: string) => {
     set({ currentLayout: layout });
+    get().applyLayout();
   },
   toggleFullscreen: () => set((state) => ({ isFullscreen: !state.isFullscreen })),
   toggleDarkMode: () => set((state) => {
@@ -302,6 +436,7 @@ export const useFamilyTreeStore = create<FamilyTreeState>((set, get) => ({
     } else {
       document.documentElement.classList.remove('dark');
     }
+    localStorage.setItem('family-tree-dark-mode', newDarkMode.toString());
     return { darkMode: newDarkMode };
   }),
   updateNodePosition: (id: string, position: { x: number; y: number }) =>
@@ -372,6 +507,30 @@ export const useFamilyTreeStore = create<FamilyTreeState>((set, get) => ({
       }
       return true;
     });
+  },
+  applyLayout: () => {
+    const state = get();
+    const { nodes, edges, currentLayout } = state;
+    let layoutedNodes: Node[] = [];
+
+    switch (currentLayout) {
+      case 'hierarchical':
+        layoutedNodes = getLayoutedElements(nodes, edges, 'TB');
+        break;
+      case 'circular':
+        layoutedNodes = getCircularLayout(nodes);
+        break;
+      case 'grid':
+        layoutedNodes = getGridLayout(nodes);
+        break;
+      case 'radial':
+        layoutedNodes = getRadialLayout(nodes, edges);
+        break;
+      default:
+        layoutedNodes = getLayoutedElements(nodes, edges, 'TB');
+    }
+
+    set({ nodes: layoutedNodes });
   },
 }));
 
