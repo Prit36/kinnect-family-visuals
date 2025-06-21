@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { Node, Edge } from '@xyflow/react';
 
@@ -320,8 +321,7 @@ export const useFamilyTreeStore = create<FamilyTreeState>((set, get) => ({
     const shareableLink = `${baseUrl}/?data=${encodedData}`;
     return shareableLink;
   },
-  
-});
+}));
 
 // Initialize dark mode from localStorage
 if (typeof window !== 'undefined') {
