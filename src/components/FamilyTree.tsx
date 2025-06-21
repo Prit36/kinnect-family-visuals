@@ -22,7 +22,7 @@ const nodeTypes: NodeTypes = {
 };
 
 const FamilyTree: React.FC = () => {
-  const { nodes, edges, updateNodePosition } = useFamilyTreeStore();
+  const { nodes, edges, updateNodePosition, darkMode } = useFamilyTreeStore();
   const [flowNodes, setNodes, onNodesChange] = useNodesState(nodes);
   const [flowEdges, setEdges, onEdgesChange] = useEdgesState(edges);
 
@@ -50,13 +50,18 @@ const FamilyTree: React.FC = () => {
   const miniMapStyle = useMemo(
     () => ({
       height: 120,
-      backgroundColor: '#f8fafc',
+      backgroundColor: darkMode ? '#1f2937' : '#f8fafc',
     }),
-    []
+    [darkMode]
   );
 
+  const backgroundClass = darkMode ? 'bg-gray-900' : 'bg-gray-50';
+  const controlsClass = darkMode 
+    ? 'bg-gray-800 border-gray-600 text-gray-200' 
+    : 'bg-white border-gray-200';
+
   return (
-    <div className="w-full h-full bg-gray-50">
+    <div className={`w-full h-full ${backgroundClass}`}>
       <ReactFlow
         nodes={flowNodes}
         edges={flowEdges}
@@ -67,13 +72,13 @@ const FamilyTree: React.FC = () => {
         nodeTypes={nodeTypes}
         fitView
         attributionPosition="top-right"
-        className="bg-gray-50"
+        className={backgroundClass}
         proOptions={{ hideAttribution: true }}
       >
-        <Controls className="bg-white border border-gray-200 rounded-lg shadow-lg" />
+        <Controls className={`${controlsClass} rounded-lg shadow-lg`} />
         <MiniMap
           style={miniMapStyle}
-          className="border border-gray-200 rounded-lg shadow-lg"
+          className={`border ${darkMode ? 'border-gray-600' : 'border-gray-200'} rounded-lg shadow-lg`}
           nodeColor={(node) => {
             if (node.type === 'person') {
               return '#3b82f6';
@@ -85,7 +90,7 @@ const FamilyTree: React.FC = () => {
           variant={BackgroundVariant.Dots} 
           gap={20} 
           size={1} 
-          color="#e2e8f0"
+          color={darkMode ? '#374151' : '#e2e8f0'}
         />
       </ReactFlow>
     </div>

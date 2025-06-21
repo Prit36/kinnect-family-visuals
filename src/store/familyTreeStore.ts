@@ -1,421 +1,333 @@
-
 import { create } from 'zustand';
 import { Node, Edge } from '@xyflow/react';
 
-export interface Person {
+export interface Person extends Record<string, unknown> {
   id: string;
   name: string;
+  nickname?: string;
   image?: string;
   gender?: 'male' | 'female' | 'other';
   birthDate?: string;
   deathDate?: string;
   birthPlace?: string;
   occupation?: string;
-  biography?: string;
   phone?: string;
   email?: string;
   website?: string;
+  biography?: string;
+  maritalStatus?: 'single' | 'married' | 'divorced' | 'widowed';
   isAlive: boolean;
-  maritalStatus?: string;
-  nickname?: string;
   age?: number;
-  notes?: string;
-  tags?: string[];
 }
 
 export interface Relationship {
+  id: string;
   sourceId: string;
   targetId: string;
   relationType: string;
-  startDate?: string;
-  endDate?: string;
-  notes?: string;
 }
 
-export const relationshipTypes = [
-  'Mother',
-  'Father',
-  'Son',
-  'Daughter',
-  'Child',
-  'Brother',
-  'Sister',
-  'Sibling',
-  'Husband',
-  'Wife',
-  'Spouse',
-  'Partner',
-  'Grandfather',
-  'Grandmother',
-  'Grandparent',
-  'Grandson',
-  'Granddaughter',
-  'Grandchild',
-  'Uncle',
-  'Aunt',
-  'Nephew',
-  'Niece',
-  'Stepfather',
-  'Stepmother',
-  'Stepchild',
-  'Half-brother',
-  'Half-sister',
-  'Cousin',
-  'In-law',
-  'Guardian',
-  'Adoptive Parent',
-  'Adoptive Child',
-  'Friend',
-  'Colleague'
+export type RelationType =
+  | 'parent'
+  | 'child'
+  | 'sibling'
+  | 'spouse'
+  | 'partner'
+  | 'friend'
+  | 'colleague';
+
+export const relationOptions = [
+  { value: 'parent', label: 'Parent' },
+  { value: 'child', label: 'Child' },
+  { value: 'sibling', label: 'Sibling' },
+  { value: 'spouse', label: 'Spouse' },
+  { value: 'partner', label: 'Partner' },
+  { value: 'friend', label: 'Friend' },
+  { value: 'colleague', label: 'Colleague' },
 ];
 
 export const layoutOptions = [
-  { value: 'hierarchical', label: 'Family Tree' },
-  { value: 'force', label: 'Force Layout' },
+  { value: 'hierarchical', label: 'Hierarchical' },
   { value: 'circular', label: 'Circular' },
   { value: 'grid', label: 'Grid' },
-  { value: 'radial', label: 'Radial' }
+  { value: 'radial', label: 'Radial' },
 ];
 
-interface SearchFilters {
-  searchTerm: string;
-  gender?: string;
-  isAlive?: boolean;
-  hasImage?: boolean;
-  ageRange?: { min: number; max: number };
-  birthYear?: { min: number; max: number };
-}
-
-interface FamilyTreeState {
+export interface FamilyTreeState {
   people: Person[];
   relationships: Relationship[];
   nodes: Node[];
   edges: Edge[];
   selectedNodeId: string | null;
-  searchFilters: SearchFilters;
-  currentLayout: string;
+  searchQuery: string;
+  filterGender: string | null;
+  filterStatus: string | null;
   showStatistics: boolean;
+  currentLayout: string;
   isFullscreen: boolean;
-  
-  // Actions
-  addPerson: (person: Omit<Person, 'id'>) => string;
-  updatePerson: (id: string, updates: Partial<Person>) => void;
-  addRelationship: (sourceId: string, targetId: string, relationType: string, details?: Partial<Relationship>) => void;
-  updateRelationship: (sourceId: string, targetId: string, updates: Partial<Relationship>) => void;
+  darkMode: boolean;
+  addPerson: (person: Omit<Person, 'id'>) => void;
   removePerson: (id: string) => void;
-  removeRelationship: (sourceId: string, targetId: string) => void;
-  updateNodePosition: (id: string, position: { x: number; y: number }) => void;
-  
-  // Selection and search
+  updatePerson: (id: string, updates: Partial<Person>) => void;
+  addRelationship: (relationship: Omit<Relationship, 'id'>) => void;
+  removeRelationship: (id: string) => void;
   setSelectedNode: (id: string | null) => void;
-  setSearchFilters: (filters: Partial<SearchFilters>) => void;
-  getFilteredPeople: () => Person[];
-  
-  // Layout and display
-  setLayout: (layout: string) => void;
+  setSearchQuery: (query: string) => void;
+  setFilterGender: (gender: string | null) => void;
+  setFilterStatus: (status: string | null) => void;
   toggleStatistics: () => void;
+  setLayout: (layout: string) => void;
   toggleFullscreen: () => void;
-  
-  // Utility functions
+  toggleDarkMode: () => void;
+  updateNodePosition: (id: string, position: { x: number; y: number }) => void;
   getPersonById: (id: string) => Person | undefined;
   getRelationships: (personId: string) => Relationship[];
-  getFamily: (personId: string) => Person[];
   exportData: () => string;
   importData: (data: string) => void;
-  getStatistics: () => any;
+  generateShareLink: () => string;
 }
 
-const createPersonNode = (person: Person, position: { x: number; y: number }): Node => ({
+const initialPeople: Person[] = [
+  {
+    id: '1',
+    name: 'John Doe',
+    nickname: 'Johnny',
+    gender: 'male',
+    birthDate: '1950-01-01',
+    birthPlace: 'New York, USA',
+    occupation: 'Engineer',
+    isAlive: true,
+    age: 73,
+    image: 'https://images.generated.photos/Rm9qRjE2a21OUGN5R1NqV0FOUlZlS0JQQkJQbU5oR21Gbk9ZZVVKT2FFVT0/prompt/1977338.jpg',
+  },
+  {
+    id: '2',
+    name: 'Jane Smith',
+    nickname: 'Janie',
+    gender: 'female',
+    birthDate: '1955-05-05',
+    birthPlace: 'Los Angeles, USA',
+    occupation: 'Teacher',
+    isAlive: true,
+    age: 68,
+    image: 'https://images.generated.photos/aG9KaW1zR1FkR3B2b09MRlVMd010a1F4blh3a1Z5aW1lV3R5R0JneHlGVT0/prompt/1977342.jpg',
+  },
+  {
+    id: '3',
+    name: 'Emily Johnson',
+    nickname: 'Em',
+    gender: 'female',
+    birthDate: '1980-03-10',
+    birthPlace: 'Chicago, USA',
+    occupation: 'Doctor',
+    isAlive: true,
+    age: 43,
+    image: 'https://images.generated.photos/UEEuNFZ4a2hqR21zeGNjR1F4R090a2w4V0NlR2F1V05lR0Ezc3haT1VPUT0/prompt/1977345.jpg',
+  },
+  {
+    id: '4',
+    name: 'Michael Brown',
+    nickname: 'Mike',
+    gender: 'male',
+    birthDate: '1978-11-15',
+    birthPlace: 'Houston, USA',
+    occupation: 'Lawyer',
+    isAlive: true,
+    age: 45,
+    image: 'https://images.generated.photos/VjFuMWF4a2JkRjB2b09MRlVMd010a1F4blh3a1Z5aW1lV3R5R0JneHlGVT0/prompt/1977348.jpg',
+  },
+  {
+    id: '5',
+    name: 'David Wilson',
+    nickname: 'Dave',
+    gender: 'male',
+    birthDate: '2005-07-20',
+    birthPlace: 'Phoenix, USA',
+    occupation: 'Student',
+    isAlive: true,
+    age: 18,
+    image: 'https://images.generated.photos/aG9KaW1zR1FkR3B2b09MRlVMd010a1F4blh3a1Z5aW1lV3R5R0JneHlGVT0/prompt/1977351.jpg',
+  },
+  {
+    id: '6',
+    name: 'Ashley Taylor',
+    nickname: 'Ash',
+    gender: 'female',
+    birthDate: '2007-09-25',
+    birthPlace: 'Philadelphia, USA',
+    occupation: 'Student',
+    isAlive: true,
+    age: 16,
+    image: 'https://images.generated.photos/aG9KaW1zR1FkR3B2b09MRlVMd010a1F4blh3a1Z5aW1lV3R5R0JneHlGVT0/prompt/1977354.jpg',
+  },
+];
+
+const initialRelationships: Relationship[] = [
+  { id: '1', sourceId: '1', targetId: '3', relationType: 'parent' },
+  { id: '2', sourceId: '2', targetId: '3', relationType: 'parent' },
+  { id: '3', sourceId: '1', targetId: '4', relationType: 'parent' },
+  { id: '4', sourceId: '2', targetId: '4', relationType: 'parent' },
+  { id: '5', sourceId: '3', targetId: '5', relationType: 'parent' },
+  { id: '6', sourceId: '4', targetId: '6', relationType: 'parent' },
+];
+
+const initialNodes: Node[] = initialPeople.map((person) => ({
   id: person.id,
   type: 'person',
-  position,
   data: person,
-  draggable: true,
-  style: {
-    background: person.gender === 'male' ? '#e3f2fd' : person.gender === 'female' ? '#fce4ec' : '#f3e5f5',
-    border: `2px solid ${person.isAlive ? '#4caf50' : '#757575'}`,
-  },
-});
+  position: { x: Math.random() * 300, y: Math.random() * 300 },
+}));
 
-const createRelationshipEdge = (relationship: Relationship): Edge => ({
-  id: `${relationship.sourceId}-${relationship.targetId}`,
+const initialEdges: Edge[] = initialRelationships.map((relationship) => ({
+  id: relationship.id,
   source: relationship.sourceId,
   target: relationship.targetId,
-  label: relationship.relationType,
   type: 'smoothstep',
-  animated: ['Spouse', 'Partner', 'Husband', 'Wife'].includes(relationship.relationType),
-  style: {
-    stroke: getRelationshipColor(relationship.relationType),
-    strokeWidth: 2,
-  },
-  labelStyle: {
-    fill: '#475569',
-    fontWeight: 600,
-    fontSize: 12,
-    background: 'white',
-    padding: '2px 4px',
-    borderRadius: '4px',
-  },
-});
-
-const getRelationshipColor = (relationType: string): string => {
-  const colors: { [key: string]: string } = {
-    'Mother': '#e91e63',
-    'Father': '#2196f3',
-    'Child': '#4caf50',
-    'Son': '#4caf50',
-    'Daughter': '#4caf50',
-    'Sibling': '#ff9800',
-    'Brother': '#ff9800',
-    'Sister': '#ff9800',
-    'Spouse': '#f44336',
-    'Husband': '#f44336',
-    'Wife': '#f44336',
-    'Partner': '#f44336',
-    'Grandparent': '#9c27b0',
-    'Grandfather': '#9c27b0',
-    'Grandmother': '#9c27b0',
-    'Grandchild': '#8bc34a',
-    'Grandson': '#8bc34a',
-    'Granddaughter': '#8bc34a',
-  };
-  return colors[relationType] || '#64748b';
-};
-
-const calculateLayout = (people: Person[], relationships: Relationship[], layoutType: string) => {
-  // Simple layout algorithms
-  switch (layoutType) {
-    case 'hierarchical':
-      return people.map((person, index) => ({
-        ...person,
-        position: { x: (index % 5) * 200, y: Math.floor(index / 5) * 150 }
-      }));
-    case 'circular':
-      return people.map((person, index) => {
-        const angle = (index / people.length) * 2 * Math.PI;
-        const radius = 300;
-        return {
-          ...person,
-          position: {
-            x: 400 + radius * Math.cos(angle),
-            y: 300 + radius * Math.sin(angle)
-          }
-        };
-      });
-    case 'grid':
-      return people.map((person, index) => ({
-        ...person,
-        position: { x: (index % 6) * 180, y: Math.floor(index / 6) * 140 }
-      }));
-    default:
-      return people.map((person, index) => ({
-        ...person,
-        position: { x: Math.random() * 800 + 100, y: Math.random() * 600 + 100 }
-      }));
-  }
-};
+  animated: true,
+}));
 
 export const useFamilyTreeStore = create<FamilyTreeState>((set, get) => ({
-  people: [],
-  relationships: [],
-  nodes: [],
-  edges: [],
+  people: initialPeople,
+  relationships: initialRelationships,
+  nodes: initialNodes,
+  edges: initialEdges,
   selectedNodeId: null,
-  searchFilters: { searchTerm: '' },
-  currentLayout: 'hierarchical',
+  searchQuery: '',
+  filterGender: null,
+  filterStatus: null,
   showStatistics: false,
+  currentLayout: 'hierarchical',
   isFullscreen: false,
-
-  addPerson: (personData) => {
-    const id = `person-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const person: Person = { ...personData, id, isAlive: personData.isAlive ?? true };
-    
-    const existingNodes = get().nodes;
-    const position = existingNodes.length === 0 
-      ? { x: 400, y: 300 }
-      : { 
-          x: Math.random() * 400 + 200, 
-          y: Math.random() * 300 + 150 
-        };
-
-    const newNode = createPersonNode(person, position);
-
+  darkMode: false,
+  addPerson: (person) =>
+    set((state) => {
+      const id = String(Date.now());
+      const newPerson = { ...person, id };
+      const newNode: Node = {
+        id: id,
+        type: 'person',
+        data: newPerson,
+        position: { x: Math.random() * 300, y: Math.random() * 300 },
+      };
+      return {
+        people: [...state.people, newPerson],
+        nodes: [...state.nodes, newNode],
+      };
+    }),
+  removePerson: (id: string) =>
     set((state) => ({
-      people: [...state.people, person],
-      nodes: [...state.nodes, newNode],
-    }));
-
-    return id;
-  },
-
-  updatePerson: (id, updates) => {
-    set((state) => ({
-      people: state.people.map(p => p.id === id ? { ...p, ...updates } : p),
-      nodes: state.nodes.map(n => n.id === id ? { ...n, data: { ...n.data, ...updates } } : n),
-    }));
-  },
-
-  addRelationship: (sourceId, targetId, relationType, details = {}) => {
-    const relationship: Relationship = { sourceId, targetId, relationType, ...details };
-    const newEdge = createRelationshipEdge(relationship);
-
-    set((state) => ({
-      relationships: [...state.relationships, relationship],
-      edges: [...state.edges, newEdge],
-    }));
-  },
-
-  updateRelationship: (sourceId, targetId, updates) => {
-    set((state) => ({
-      relationships: state.relationships.map(r => 
-        r.sourceId === sourceId && r.targetId === targetId ? { ...r, ...updates } : r
+      people: state.people.filter((person) => person.id !== id),
+      relationships: state.relationships.filter(
+        (rel) => rel.sourceId !== id && rel.targetId !== id
       ),
-    }));
-  },
-
-  removePerson: (id) => {
-    set((state) => ({
-      people: state.people.filter(p => p.id !== id),
-      nodes: state.nodes.filter(n => n.id !== id),
-      relationships: state.relationships.filter(r => r.sourceId !== id && r.targetId !== id),
-      edges: state.edges.filter(e => e.source !== id && e.target !== id),
+      nodes: state.nodes.filter((node) => node.id !== id),
+      edges: state.edges.filter(
+        (edge) => edge.source !== id && edge.target !== id
+      ),
       selectedNodeId: state.selectedNodeId === id ? null : state.selectedNodeId,
-    }));
-  },
-
-  removeRelationship: (sourceId, targetId) => {
+    })),
+  updatePerson: (id: string, updates: Partial<Person>) =>
     set((state) => ({
-      relationships: state.relationships.filter(r => 
-        !(r.sourceId === sourceId && r.targetId === targetId)
+      people: state.people.map((person) =>
+        person.id === id ? { ...person, ...updates } : person
       ),
-      edges: state.edges.filter(e => 
-        !(e.source === sourceId && e.target === targetId)
+      nodes: state.nodes.map((node) =>
+        node.id === id ? { ...node, data: { ...node.data, ...updates } } : node
       ),
-    }));
-  },
-
-  updateNodePosition: (id, position) => {
+    })),
+  addRelationship: (relationship) =>
+    set((state) => {
+      const id = String(Date.now());
+      const newRelationship = { ...relationship, id };
+      const newEdge: Edge = {
+        id: id,
+        source: relationship.sourceId,
+        target: relationship.targetId,
+        type: 'smoothstep',
+        animated: true,
+      };
+      return {
+        relationships: [...state.relationships, newRelationship],
+        edges: [...state.edges, newEdge],
+      };
+    }),
+  removeRelationship: (id: string) =>
     set((state) => ({
-      nodes: state.nodes.map(node => 
+      relationships: state.relationships.filter((rel) => rel.id !== id),
+      edges: state.edges.filter((edge) => edge.id !== id),
+    })),
+  setSelectedNode: (id: string | null) => set({ selectedNodeId: id }),
+  setSearchQuery: (query: string) => set({ searchQuery: query }),
+  setFilterGender: (gender: string | null) => set({ filterGender: gender }),
+  setFilterStatus: (status: string | null) => set({ filterStatus: status }),
+  toggleStatistics: () => set((state) => ({ showStatistics: !state.showStatistics })),
+  setLayout: (layout: string) => {
+    set({ currentLayout: layout });
+  },
+  toggleFullscreen: () => set((state) => ({ isFullscreen: !state.isFullscreen })),
+  toggleDarkMode: () => set((state) => {
+    const newDarkMode = !state.darkMode;
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    return { darkMode: newDarkMode };
+  }),
+  updateNodePosition: (id: string, position: { x: number; y: number }) =>
+    set((state) => ({
+      nodes: state.nodes.map((node) =>
         node.id === id ? { ...node, position } : node
       ),
-    }));
+    })),
+  getPersonById: (id: string) => {
+    const people = get().people;
+    return people.find((person) => person.id === id);
   },
-
-  setSelectedNode: (id) => {
-    set({ selectedNodeId: id });
+  getRelationships: (personId: string) => {
+    const relationships = get().relationships;
+    return relationships.filter(
+      (rel) => rel.sourceId === personId || rel.targetId === personId
+    );
   },
-
-  setSearchFilters: (filters) => {
-    set((state) => ({
-      searchFilters: { ...state.searchFilters, ...filters }
-    }));
-  },
-
-  getFilteredPeople: () => {
-    const { people, searchFilters } = get();
-    return people.filter(person => {
-      const matchesSearch = !searchFilters.searchTerm || 
-        person.name.toLowerCase().includes(searchFilters.searchTerm.toLowerCase()) ||
-        person.nickname?.toLowerCase().includes(searchFilters.searchTerm.toLowerCase()) ||
-        person.occupation?.toLowerCase().includes(searchFilters.searchTerm.toLowerCase());
-      
-      const matchesGender = !searchFilters.gender || person.gender === searchFilters.gender;
-      const matchesAlive = searchFilters.isAlive === undefined || person.isAlive === searchFilters.isAlive;
-      const matchesImage = searchFilters.hasImage === undefined || !!person.image === searchFilters.hasImage;
-      
-      return matchesSearch && matchesGender && matchesAlive && matchesImage;
-    });
-  },
-
-  setLayout: (layout) => {
-    set({ currentLayout: layout });
-    const { people, relationships } = get();
-    const layoutPositions = calculateLayout(people, relationships, layout);
-    
-    set((state) => ({
-      nodes: state.nodes.map(node => {
-        const layoutPerson = layoutPositions.find(p => p.id === node.id);
-        return layoutPerson ? { ...node, position: layoutPerson.position } : node;
-      })
-    }));
-  },
-
-  toggleStatistics: () => {
-    set((state) => ({ showStatistics: !state.showStatistics }));
-  },
-
-  toggleFullscreen: () => {
-    set((state) => ({ isFullscreen: !state.isFullscreen }));
-  },
-
-  getPersonById: (id) => {
-    return get().people.find(p => p.id === id);
-  },
-
-  getRelationships: (personId) => {
-    return get().relationships.filter(r => r.sourceId === personId || r.targetId === personId);
-  },
-
-  getFamily: (personId) => {
-    const relationships = get().getRelationships(personId);
-    const familyIds = relationships.map(r => r.sourceId === personId ? r.targetId : r.sourceId);
-    return get().people.filter(p => familyIds.includes(p.id));
-  },
-
   exportData: () => {
-    const { people, relationships } = get();
-    return JSON.stringify({ people, relationships }, null, 2);
+    const state = get();
+    const data = JSON.stringify({
+      people: state.people,
+      relationships: state.relationships,
+      nodes: state.nodes,
+      edges: state.edges,
+    });
+    return data;
   },
-
-  importData: (data) => {
+  importData: (data: string) => {
     try {
-      const parsed = JSON.parse(data);
-      if (parsed.people && parsed.relationships) {
-        const nodes = parsed.people.map((person: Person) => 
-          createPersonNode(person, { x: Math.random() * 400 + 200, y: Math.random() * 300 + 150 })
-        );
-        const edges = parsed.relationships.map((rel: Relationship) => createRelationshipEdge(rel));
-        
-        set({
-          people: parsed.people,
-          relationships: parsed.relationships,
-          nodes,
-          edges,
-        });
-      }
+      const parsedData = JSON.parse(data);
+      set({
+        people: parsedData.people || [],
+        relationships: parsedData.relationships || [],
+        nodes: parsedData.nodes || [],
+        edges: parsedData.edges || [],
+      });
     } catch (error) {
-      console.error('Failed to import data:', error);
+      console.error('Failed to parse imported data:', error);
     }
   },
-
-  getStatistics: () => {
-    const { people, relationships } = get();
-    const currentYear = new Date().getFullYear();
-    
-    return {
-      totalPeople: people.length,
-      totalRelationships: relationships.length,
-      alive: people.filter(p => p.isAlive).length,
-      deceased: people.filter(p => !p.isAlive).length,
-      maleCount: people.filter(p => p.gender === 'male').length,
-      femaleCount: people.filter(p => p.gender === 'female').length,
-      withPhotos: people.filter(p => p.image).length,
-      averageAge: people.reduce((sum, p) => sum + (p.age || 0), 0) / people.length || 0,
-      oldestPerson: people.reduce((oldest, p) => 
-        (p.age || 0) > (oldest?.age || 0) ? p : oldest, people[0]
-      ),
-      youngestPerson: people.reduce((youngest, p) => 
-        (p.age || Infinity) < (youngest?.age || Infinity) ? p : youngest, people[0]
-      ),
-      birthYearRange: {
-        earliest: Math.min(...people.map(p => p.birthDate ? new Date(p.birthDate).getFullYear() : currentYear)),
-        latest: Math.max(...people.map(p => p.birthDate ? new Date(p.birthDate).getFullYear() : 1900))
-      },
-      relationshipTypes: relationships.reduce((acc, r) => {
-        acc[r.relationType] = (acc[r.relationType] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>)
-    };
+  generateShareLink: () => {
+    const data = get().exportData();
+    const encodedData = encodeURIComponent(data);
+    const baseUrl = window.location.origin;
+    const shareableLink = `${baseUrl}/?data=${encodedData}`;
+    return shareableLink;
   },
-}));
+  
+});
+
+// Initialize dark mode from localStorage
+if (typeof window !== 'undefined') {
+  const savedDarkMode = localStorage.getItem('family-tree-dark-mode');
+  if (savedDarkMode === 'true') {
+    document.documentElement.classList.add('dark');
+    useFamilyTreeStore.setState({ darkMode: true });
+  }
+}
