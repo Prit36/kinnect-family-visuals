@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { Person } from '../store/familyTreeStore';
@@ -13,7 +14,9 @@ import {
   Heart,
   Info,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Star,
+  Crown
 } from 'lucide-react';
 import { useFamilyTreeStore } from '../store/familyTreeStore';
 import { Button } from '@/components/ui/button';
@@ -30,7 +33,7 @@ interface PersonNodeProps extends Omit<NodeProps, 'data'> {
 
 const PersonNode: React.FC<PersonNodeProps> = ({ data, id }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { removePerson, setSelectedNode, selectedNodeId } = useFamilyTreeStore();
+  const { removePerson, setSelectedNode, selectedNodeId, darkMode } = useFamilyTreeStore();
   const isSelected = selectedNodeId === id;
 
   const handleRemove = (e: React.MouseEvent) => {
@@ -49,212 +52,252 @@ const PersonNode: React.FC<PersonNodeProps> = ({ data, id }) => {
     return null;
   };
 
-  const getBorderColor = () => {
-    if (isSelected) return '#3b82f6';
-    if (!data.isAlive) return '#64748b';
-    return data.gender === 'male' ? '#2563eb' : data.gender === 'female' ? '#ec4899' : '#8b5cf6';
+  const getGenderGradient = () => {
+    if (!data.isAlive) return 'from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700';
+    switch (data.gender) {
+      case 'male': return 'from-blue-50 via-blue-100 to-indigo-100 dark:from-blue-900/30 dark:via-blue-800/40 dark:to-indigo-800/30';
+      case 'female': return 'from-pink-50 via-rose-100 to-purple-100 dark:from-pink-900/30 dark:via-rose-800/40 dark:to-purple-800/30';
+      default: return 'from-purple-50 via-violet-100 to-indigo-100 dark:from-purple-900/30 dark:via-violet-800/40 dark:to-indigo-800/30';
+    }
   };
 
-  const getBackgroundColor = () => {
-    if (!data.isAlive) return '#f8fafc';
-    return data.gender === 'male' ? '#eff6ff' : data.gender === 'female' ? '#fdf2f8' : '#f5f3ff';
+  const getBorderGradient = () => {
+    if (isSelected) return 'from-blue-400 to-purple-500';
+    if (!data.isAlive) return 'from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-500';
+    switch (data.gender) {
+      case 'male': return 'from-blue-400 to-indigo-500';
+      case 'female': return 'from-pink-400 to-rose-500';
+      default: return 'from-purple-400 to-violet-500';
+    }
   };
 
   return (
     <TooltipProvider>
       <div 
-        className={`relative bg-white dark:bg-gray-800 rounded-xl shadow-lg transition-all duration-200 cursor-pointer ${
-          isSelected ? 'ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-gray-900' : 'hover:shadow-xl'
-        }`}
-        style={{
-          backgroundColor: getBackgroundColor(),
-          border: `3px solid ${getBorderColor()}`,
-          minWidth: isExpanded ? '280px' : '180px',
-          maxWidth: isExpanded ? '320px' : '220px',
-        }}
+        className={`relative group cursor-pointer transition-all duration-300 ${
+          isExpanded ? 'w-80' : 'w-64'
+        } ${isSelected ? 'scale-105 z-10' : 'hover:scale-102'}`}
         onClick={handleSelect}
       >
-        <Handle
-          type="target"
-          position={Position.Top}
-          className="w-3 h-3 bg-blue-500 border-2 border-white dark:border-gray-800"
-        />
-        <Handle
-          type="source"
-          position={Position.Bottom}
-          className="w-3 h-3 bg-blue-500 border-2 border-white dark:border-gray-800"
-        />
+        {/* Glow effect */}
+        <div className={`absolute inset-0 bg-gradient-to-r ${getBorderGradient()} rounded-2xl blur-sm opacity-0 group-hover:opacity-30 transition-opacity duration-300`} />
         
-        <button
-          onClick={handleRemove}
-          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors z-10"
-        >
-          <X size={12} />
-        </button>
-
-        <div className="p-4">
-          {/* Profile Image and Basic Info */}
-          <div className="flex items-start space-x-3 mb-3">
-            <div className="relative">
-              {data.image ? (
-                <img
-                  src={data.image}
-                  alt={data.name}
-                  className="w-12 h-12 rounded-full object-cover border-2 border-white dark:border-gray-700 shadow-sm"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center border-2 border-white dark:border-gray-700 shadow-sm">
-                  <User size={20} className="text-gray-500 dark:text-gray-300" />
-                </div>
-              )}
-              {!data.isAlive && (
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-gray-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xs">†</span>
-                </div>
-              )}
-            </div>
+        {/* Main card */}
+        <div className={`relative bg-gradient-to-br ${getGenderGradient()} backdrop-blur-sm rounded-2xl shadow-xl border-2 border-transparent bg-clip-padding transition-all duration-300`}>
+          {/* Border gradient overlay */}
+          <div className={`absolute inset-0 bg-gradient-to-r ${getBorderGradient()} rounded-2xl p-0.5`}>
+            <div className={`h-full w-full bg-gradient-to-br ${getGenderGradient()} rounded-2xl`} />
+          </div>
+          
+          {/* Content */}
+          <div className="relative p-6">
+            <Handle
+              type="target"
+              position={Position.Top}
+              className="w-4 h-4 bg-gradient-to-r from-blue-400 to-purple-500 border-2 border-white dark:border-gray-800 shadow-lg"
+            />
+            <Handle
+              type="source"
+              position={Position.Bottom}
+              className="w-4 h-4 bg-gradient-to-r from-blue-400 to-purple-500 border-2 border-white dark:border-gray-800 shadow-lg"
+            />
             
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">
-                {data.name}
-              </h3>
-              {data.nickname && (
-                <p className="text-xs text-gray-600 dark:text-gray-400 italic">"{data.nickname}"</p>
-              )}
-              {data.gender && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                  {data.gender}
-                </p>
-              )}
-              {getAgeDisplay() && (
-                <p className="text-xs text-gray-600 dark:text-gray-400">
-                  {getAgeDisplay()}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Quick Info Icons */}
-          <div className="flex justify-center space-x-2 mb-2">
-            {data.birthDate && (
-              <Tooltip>
-                <TooltipTrigger>
-                  <Calendar size={14} className="text-blue-500" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Born: {new Date(data.birthDate).toLocaleDateString()}</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-            {data.birthPlace && (
-              <Tooltip>
-                <TooltipTrigger>
-                  <MapPin size={14} className="text-green-500" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{data.birthPlace}</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-            {data.occupation && (
-              <Tooltip>
-                <TooltipTrigger>
-                  <Briefcase size={14} className="text-purple-500" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{data.occupation}</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-            {data.maritalStatus && (
-              <Tooltip>
-                <TooltipTrigger>
-                  <Heart size={14} className="text-pink-500" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{data.maritalStatus}</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-          </div>
-
-          {/* Expand/Collapse Button */}
-          <div className="flex justify-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsExpanded(!isExpanded);
-              }}
-              className="h-6 px-2 text-xs dark:text-gray-300 dark:hover:text-gray-100"
+            {/* Close button */}
+            <button
+              onClick={handleRemove}
+              className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:from-red-600 hover:to-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl z-10 hover:scale-110"
             >
-              {isExpanded ? (
-                <>
-                  <ChevronUp size={12} className="mr-1" />
-                  Less
-                </>
-              ) : (
-                <>
-                  <ChevronDown size={12} className="mr-1" />
-                  More
-                </>
-              )}
-            </Button>
-          </div>
+              <X size={14} />
+            </button>
 
-          {/* Expanded Details */}
-          {isExpanded && (
-            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600 space-y-2">
-              {data.deathDate && (
-                <div className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400">
-                  <Calendar size={12} />
-                  <span>Died: {new Date(data.deathDate).toLocaleDateString()}</span>
-                </div>
-              )}
-              
-              {data.phone && (
-                <div className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400">
-                  <Phone size={12} />
-                  <span className="truncate">{data.phone}</span>
-                </div>
-              )}
-              
-              {data.email && (
-                <div className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400">
-                  <Mail size={12} />
-                  <span className="truncate">{data.email}</span>
-                </div>
-              )}
-              
-              {data.website && (
-                <div className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400">
-                  <Globe size={12} />
-                  <a 
-                    href={data.website} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline truncate"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Website
-                  </a>
-                </div>
-              )}
-              
-              {data.biography && (
-                <div className="text-xs text-gray-600 dark:text-gray-400">
-                  <div className="flex items-start space-x-2">
-                    <Info size={12} className="mt-0.5 flex-shrink-0" />
-                    <p className="line-clamp-3">{data.biography}</p>
+            {/* Header with profile */}
+            <div className="flex items-start space-x-4 mb-4">
+              <div className="relative">
+                {data.image ? (
+                  <div className="relative">
+                    <img
+                      src={data.image}
+                      alt={data.name}
+                      className="w-16 h-16 rounded-full object-cover border-3 border-white dark:border-gray-700 shadow-lg"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-transparent to-white/20" />
                   </div>
+                ) : (
+                  <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${getBorderGradient()} flex items-center justify-center border-3 border-white dark:border-gray-700 shadow-lg`}>
+                    <User size={24} className="text-white" />
+                  </div>
+                )}
+                
+                {/* Status indicators */}
+                {!data.isAlive && (
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-r from-gray-600 to-gray-700 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-white text-xs font-bold">†</span>
+                  </div>
+                )}
+                
+                {data.maritalStatus === 'married' && (
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center shadow-lg">
+                    <Crown size={10} className="text-white" />
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-1 leading-tight">
+                  {data.name}
+                </h3>
+                {data.nickname && (
+                  <p className="text-sm text-gray-600 dark:text-gray-300 italic mb-1">"{data.nickname}"</p>
+                )}
+                <div className="flex items-center space-x-2 text-xs">
+                  {data.gender && (
+                    <span className={`px-2 py-1 rounded-full text-white font-medium ${
+                      data.gender === 'male' ? 'bg-gradient-to-r from-blue-500 to-indigo-500' :
+                      data.gender === 'female' ? 'bg-gradient-to-r from-pink-500 to-rose-500' :
+                      'bg-gradient-to-r from-purple-500 to-violet-500'
+                    }`}>
+                      {data.gender}
+                    </span>
+                  )}
+                  {getAgeDisplay() && (
+                    <span className="px-2 py-1 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium">
+                      {getAgeDisplay()}
+                    </span>
+                  )}
                 </div>
+              </div>
+            </div>
+
+            {/* Quick info icons */}
+            <div className="flex justify-center space-x-3 mb-4">
+              {data.birthDate && (
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110">
+                      <Calendar size={14} className="text-white" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Born: {new Date(data.birthDate).toLocaleDateString()}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              {data.birthPlace && (
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110">
+                      <MapPin size={14} className="text-white" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{data.birthPlace}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              {data.occupation && (
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-violet-600 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110">
+                      <Briefcase size={14} className="text-white" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{data.occupation}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              {data.maritalStatus && (
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-pink-500 to-rose-600 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110">
+                      <Heart size={14} className="text-white" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{data.maritalStatus}</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
             </div>
-          )}
+
+            {/* Expand/Collapse Button */}
+            <div className="flex justify-center mb-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsExpanded(!isExpanded);
+                }}
+                className="h-8 px-4 text-xs bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm hover:bg-white/70 dark:hover:bg-gray-700/70 text-gray-700 dark:text-gray-300 border border-white/20 dark:border-gray-600/20 rounded-full transition-all duration-200"
+              >
+                {isExpanded ? (
+                  <>
+                    <ChevronUp size={12} className="mr-1" />
+                    Less Info
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown size={12} className="mr-1" />
+                    More Info
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {/* Expanded Details */}
+            {isExpanded && (
+              <div className="space-y-3 pt-3 border-t border-white/20 dark:border-gray-600/20">
+                {data.deathDate && (
+                  <div className="flex items-center space-x-3 text-sm text-gray-600 dark:text-gray-300 bg-white/30 dark:bg-gray-800/30 rounded-lg p-2 backdrop-blur-sm">
+                    <Calendar size={14} className="text-gray-500" />
+                    <span>Died: {new Date(data.deathDate).toLocaleDateString()}</span>
+                  </div>
+                )}
+                
+                {data.phone && (
+                  <div className="flex items-center space-x-3 text-sm text-gray-600 dark:text-gray-300 bg-white/30 dark:bg-gray-800/30 rounded-lg p-2 backdrop-blur-sm">
+                    <Phone size={14} className="text-green-500" />
+                    <span className="truncate">{data.phone}</span>
+                  </div>
+                )}
+                
+                {data.email && (
+                  <div className="flex items-center space-x-3 text-sm text-gray-600 dark:text-gray-300 bg-white/30 dark:bg-gray-800/30 rounded-lg p-2 backdrop-blur-sm">
+                    <Mail size={14} className="text-blue-500" />
+                    <span className="truncate">{data.email}</span>
+                  </div>
+                )}
+                
+                {data.website && (
+                  <div className="flex items-center space-x-3 text-sm text-gray-600 dark:text-gray-300 bg-white/30 dark:bg-gray-800/30 rounded-lg p-2 backdrop-blur-sm">
+                    <Globe size={14} className="text-purple-500" />
+                    <a 
+                      href={data.website} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 hover:underline truncate"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Visit Website
+                    </a>
+                  </div>
+                )}
+                
+                {data.biography && (
+                  <div className="text-sm text-gray-600 dark:text-gray-300 bg-white/30 dark:bg-gray-800/30 rounded-lg p-3 backdrop-blur-sm">
+                    <div className="flex items-start space-x-2">
+                      <Info size={14} className="mt-0.5 flex-shrink-0 text-amber-500" />
+                      <p className="leading-relaxed">{data.biography}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </TooltipProvider>
