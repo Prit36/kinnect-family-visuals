@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { Node, Edge } from '@xyflow/react';
 
@@ -37,6 +36,16 @@ export type RelationType =
   | 'friend'
   | 'colleague';
 
+export const relationshipTypes = [
+  'parent',
+  'child',
+  'sibling',
+  'spouse',
+  'partner',
+  'friend',
+  'colleague',
+];
+
 export const relationOptions = [
   { value: 'parent', label: 'Parent' },
   { value: 'child', label: 'Child' },
@@ -54,6 +63,15 @@ export const layoutOptions = [
   { value: 'radial', label: 'Radial' },
 ];
 
+export interface SearchFilters {
+  searchTerm: string;
+  gender?: 'male' | 'female' | 'other';
+  isAlive?: boolean;
+  hasImage?: boolean;
+  ageRange?: [number, number];
+  birthYear?: number;
+}
+
 export interface FamilyTreeState {
   people: Person[];
   relationships: Relationship[];
@@ -67,10 +85,11 @@ export interface FamilyTreeState {
   currentLayout: string;
   isFullscreen: boolean;
   darkMode: boolean;
-  addPerson: (person: Omit<Person, 'id'>) => void;
+  searchFilters: SearchFilters;
+  addPerson: (person: Omit<Person, 'id'>) => string;
   removePerson: (id: string) => void;
   updatePerson: (id: string, updates: Partial<Person>) => void;
-  addRelationship: (relationship: Omit<Relationship, 'id'>) => void;
+  addRelationship: (sourceId: string, targetId: string, relationType: string) => void;
   removeRelationship: (id: string) => void;
   setSelectedNode: (id: string | null) => void;
   setSearchQuery: (query: string) => void;
@@ -86,6 +105,8 @@ export interface FamilyTreeState {
   exportData: () => string;
   importData: (data: string) => void;
   generateShareLink: () => string;
+  setSearchFilters: (filters: Partial<SearchFilters>) => void;
+  getFilteredPeople: () => Person[];
 }
 
 const initialPeople: Person[] = [
@@ -200,21 +221,29 @@ export const useFamilyTreeStore = create<FamilyTreeState>((set, get) => ({
   currentLayout: 'hierarchical',
   isFullscreen: false,
   darkMode: false,
-  addPerson: (person) =>
-    set((state) => {
-      const id = String(Date.now());
-      const newPerson = { ...person, id };
-      const newNode: Node = {
-        id: id,
-        type: 'person',
-        data: newPerson,
-        position: { x: Math.random() * 300, y: Math.random() * 300 },
-      };
-      return {
-        people: [...state.people, newPerson],
-        nodes: [...state.nodes, newNode],
-      };
-    }),
+  searchFilters: {
+    searchTerm: '',
+    gender: undefined,
+    isAlive: undefined,
+    hasImage: undefined,
+    ageRange: undefined,
+    birthYear: undefined,
+  },
+  addPerson: (person) => {
+    const id = String(Date.now());
+    const newPerson = { ...person, id };
+    const newNode: Node = {
+      id: id,
+      type: 'person',
+      data: newPerson,
+      position: { x: Math.random() * 300, y: Math.random() * 300 },
+    };
+    set((state) => ({
+      people: [...state.people, newPerson],
+      nodes: [...state.nodes, newNode],
+    }));
+    return id;
+  },
   removePerson: (id: string) =>
     set((state) => ({
       people: state.people.filter((person) => person.id !== id),
@@ -236,14 +265,14 @@ export const useFamilyTreeStore = create<FamilyTreeState>((set, get) => ({
         node.id === id ? { ...node, data: { ...node.data, ...updates } } : node
       ),
     })),
-  addRelationship: (relationship) =>
+  addRelationship: (sourceId: string, targetId: string, relationType: string) =>
     set((state) => {
       const id = String(Date.now());
-      const newRelationship = { ...relationship, id };
+      const newRelationship = { id, sourceId, targetId, relationType };
       const newEdge: Edge = {
         id: id,
-        source: relationship.sourceId,
-        target: relationship.targetId,
+        source: sourceId,
+        target: targetId,
         type: 'smoothstep',
         animated: true,
       };
@@ -320,6 +349,29 @@ export const useFamilyTreeStore = create<FamilyTreeState>((set, get) => ({
     const baseUrl = window.location.origin;
     const shareableLink = `${baseUrl}/?data=${encodedData}`;
     return shareableLink;
+  },
+  setSearchFilters: (filters: Partial<SearchFilters>) =>
+    set((state) => ({
+      searchFilters: { ...state.searchFilters, ...filters },
+    })),
+  getFilteredPeople: () => {
+    const state = get();
+    const { searchFilters } = state;
+    return state.people.filter((person) => {
+      if (searchFilters.searchTerm && !person.name.toLowerCase().includes(searchFilters.searchTerm.toLowerCase())) {
+        return false;
+      }
+      if (searchFilters.gender && person.gender !== searchFilters.gender) {
+        return false;
+      }
+      if (searchFilters.isAlive !== undefined && person.isAlive !== searchFilters.isAlive) {
+        return false;
+      }
+      if (searchFilters.hasImage !== undefined && !!person.image !== searchFilters.hasImage) {
+        return false;
+      }
+      return true;
+    });
   },
 }));
 
