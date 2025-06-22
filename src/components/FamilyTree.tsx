@@ -88,12 +88,12 @@ const FamilyTree: React.FC = () => {
   );
 
   const backgroundClass = darkMode 
-    ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
-    : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50';
+    ? 'bg-gray-900' 
+    : 'bg-slate-50';
 
   const controlsClass = darkMode 
-    ? 'bg-gray-800/80 border-gray-600 text-gray-200 backdrop-blur-sm' 
-    : 'bg-white/80 border-gray-200 backdrop-blur-sm';
+    ? 'bg-gray-800 border-gray-600 text-gray-200' 
+    : 'bg-white border-gray-200';
 
   return (
     <div className={`w-full h-full ${backgroundClass}`}>
@@ -155,9 +155,9 @@ const FamilyTree: React.FC = () => {
         searchFilters.isAlive !== undefined || searchFilters.hasImage !== undefined) && (
         <div className={`absolute top-4 left-4 z-10 px-4 py-2 rounded-lg shadow-lg ${
           darkMode 
-            ? 'bg-gray-800/90 text-gray-200 border border-gray-600' 
-            : 'bg-white/90 text-gray-800 border border-gray-200'
-        } backdrop-blur-sm`}>
+            ? 'bg-gray-800 text-gray-200 border border-gray-600' 
+            : 'bg-white text-gray-800 border border-gray-200'
+        }`}>
           <p className="text-sm font-medium">
             Showing {visibleNodes.length} of {people.length} family members
           </p>

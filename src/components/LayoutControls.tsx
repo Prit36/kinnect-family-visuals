@@ -62,7 +62,7 @@ const LayoutControls: React.FC = () => {
         <div className="flex items-center space-x-2">
           <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Layout:</span>
           <Select value={currentLayout} onValueChange={handleLayoutChange}>
-            <SelectTrigger className={`w-40 ${darkMode ? 'border-gray-600 bg-gray-800/50 text-gray-200' : 'bg-white/80 backdrop-blur-sm'}`}>
+            <SelectTrigger className={`w-40 ${darkMode ? 'border-gray-600 bg-gray-800 text-gray-200' : 'bg-white'}`}>
               <div className="flex items-center space-x-2">
                 {getLayoutIcon(currentLayout)}
                 <SelectValue />
@@ -88,7 +88,7 @@ const LayoutControls: React.FC = () => {
         <div className="flex items-center space-x-2">
           <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>View:</span>
           <Select value={nodeViewMode} onValueChange={handleViewModeChange}>
-            <SelectTrigger className={`w-32 ${darkMode ? 'border-gray-600 bg-gray-800/50 text-gray-200' : 'bg-white/80 backdrop-blur-sm'}`}>
+            <SelectTrigger className={`w-32 ${darkMode ? 'border-gray-600 bg-gray-800 text-gray-200' : 'bg-white'}`}>
               <div className="flex items-center space-x-2">
                 <Eye size={16} />
                 <SelectValue />
@@ -123,7 +123,7 @@ const LayoutControls: React.FC = () => {
               variant={showStatistics ? "default" : "outline"}
               size="sm"
               onClick={toggleStatistics}
-              className={darkMode ? 'border-gray-600 bg-gray-800/50 text-gray-200 hover:bg-gray-700' : 'bg-white/80 backdrop-blur-sm'}
+              className={darkMode ? 'border-gray-600 bg-gray-800 text-gray-200 hover:bg-gray-700' : 'bg-white'}
             >
               <BarChart3 size={16} />
             </Button>
@@ -139,7 +139,7 @@ const LayoutControls: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={handleFullscreenToggle}
-              className={darkMode ? 'border-gray-600 bg-gray-800/50 text-gray-200 hover:bg-gray-700' : 'bg-white/80 backdrop-blur-sm'}
+              className={darkMode ? 'border-gray-600 bg-gray-800 text-gray-200 hover:bg-gray-700' : 'bg-white'}
             >
               {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
             </Button>

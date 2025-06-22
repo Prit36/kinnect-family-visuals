@@ -120,7 +120,7 @@ const PersonNodeFullImage: React.FC<PersonNodeProps> = memo(({ data, id, selecte
           transition={{ duration: 0.2 }}
           className={cn(
             "w-72 rounded-2xl shadow-xl transition-all duration-300 cursor-pointer overflow-hidden",
-            "bg-white/80 dark:bg-gray-800/80 backdrop-blur-md",
+            "bg-white dark:bg-gray-800",
             "border-2",
             isSelected
               ? "border-sky-500"
@@ -151,7 +151,7 @@ const PersonNodeFullImage: React.FC<PersonNodeProps> = memo(({ data, id, selecte
                 {getInitials(data.name)}
               </div>
             )}
-            <div className="absolute bottom-0 left-0 w-full bg-black/20 text-white p-2 rounded-b-2xl bg-gradient-to-t from-black/50 to-transparent">
+            <div className="absolute bottom-0 left-0 w-full bg-black/50 text-white p-2 rounded-b-2xl">
               <h3 className="font-semibold text-lg text-center">{data.name}</h3>
               <p className="text-xs text-center">{getLifespan(data)}</p>
             </div>
