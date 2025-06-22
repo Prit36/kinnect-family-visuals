@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   User, 
@@ -18,7 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
 const PersonDetailPanel: React.FC = () => {
-  const { selectedNodeId, getPersonById, getRelationships, people, setSelectedNode } = useFamilyTreeStore();
+  const { selectedNodeId, getPersonById, getRelationships, people, setSelectedNode, darkMode } = useFamilyTreeStore();
   
   if (!selectedNodeId) return null;
   
@@ -28,7 +27,7 @@ const PersonDetailPanel: React.FC = () => {
   if (!person) return null;
 
   const getRelatedPerson = (relationship: any) => {
-    const relatedId = relationship.sourceId === selectedNodeId ? relationship.targetId : relationship.sourceId;
+    const relatedId = relationship.parentId === selectedNodeId ? relationship.childId : relationship.parentId;
     return people.find(p => p.id === relatedId);
   };
 
@@ -40,9 +39,13 @@ const PersonDetailPanel: React.FC = () => {
   };
 
   return (
-    <div className="fixed right-4 top-20 bottom-4 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-20 overflow-y-auto">
-      <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Person Details</h2>
+    <div className={`fixed right-4 top-20 bottom-4 w-80 rounded-lg shadow-xl border z-20 overflow-y-auto ${
+      darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200'
+    }`}>
+      <div className={`sticky top-0 border-b p-4 flex items-center justify-between ${
+        darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200'
+      }`}>
+        <h2 className={`text-lg font-semibold ${darkMode ? 'text-gray-200' : ''}`}>Person Details</h2>
         <Button
           variant="ghost"
           size="sm"
@@ -66,9 +69,9 @@ const PersonDetailPanel: React.FC = () => {
               <User size={32} className="text-gray-500" />
             </div>
           )}
-          <h3 className="mt-2 text-xl font-bold text-gray-900">{person.name}</h3>
+          <h3 className={`mt-2 text-xl font-bold ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>{person.name}</h3>
           {person.nickname && (
-            <p className="text-gray-600 italic">"{person.nickname}"</p>
+            <p className={`italic ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>"{person.nickname}"</p>
           )}
           <div className="flex justify-center mt-2">
             <Badge variant={person.isAlive ? "default" : "secondary"}>
@@ -81,7 +84,7 @@ const PersonDetailPanel: React.FC = () => {
 
         {/* Basic Information */}
         <div className="space-y-3">
-          <h4 className="font-semibold text-gray-900">Basic Information</h4>
+          <h4 className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>Basic Information</h4>
           
           {person.gender && (
             <div className="flex items-center space-x-2">
@@ -134,7 +137,7 @@ const PersonDetailPanel: React.FC = () => {
           <>
             <Separator />
             <div className="space-y-3">
-              <h4 className="font-semibold text-gray-900">Contact Information</h4>
+              <h4 className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>Contact Information</h4>
               
               {person.phone && (
                 <div className="flex items-center space-x-2">
@@ -176,8 +179,8 @@ const PersonDetailPanel: React.FC = () => {
           <>
             <Separator />
             <div className="space-y-2">
-              <h4 className="font-semibold text-gray-900">Biography</h4>
-              <p className="text-sm text-gray-700 leading-relaxed">{person.biography}</p>
+              <h4 className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>Biography</h4>
+              <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{person.biography}</p>
             </div>
           </>
         )}
@@ -187,17 +190,19 @@ const PersonDetailPanel: React.FC = () => {
           <>
             <Separator />
             <div className="space-y-3">
-              <h4 className="font-semibold text-gray-900">Family Relationships</h4>
+              <h4 className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>Family Relationships</h4>
               <div className="space-y-2">
                 {relationships.map((rel, index) => {
                   const relatedPerson = getRelatedPerson(rel);
                   if (!relatedPerson) return null;
                   
                   return (
-                    <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div key={index} className={`flex items-center justify-between p-2 rounded ${
+                      darkMode ? 'bg-gray-700' : 'bg-gray-50'
+                    }`}>
                       <div>
-                        <p className="text-sm font-medium">{relatedPerson.name}</p>
-                        <p className="text-xs text-gray-600">{rel.relationType}</p>
+                        <p className={`text-sm font-medium ${darkMode ? 'text-gray-200' : ''}`}>{relatedPerson.name}</p>
+                        <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{rel.type}</p>
                       </div>
                       <Button
                         variant="ghost"

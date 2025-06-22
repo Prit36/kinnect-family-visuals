@@ -38,7 +38,6 @@ const SearchAndFilter: React.FC = () => {
       isAlive: undefined,
       hasImage: undefined,
       ageRange: undefined,
-      birthYear: undefined,
     });
   };
 

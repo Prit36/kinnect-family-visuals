@@ -1,7 +1,7 @@
 
 import { create } from 'zustand';
 import { Node, Edge, Position } from '@xyflow/react';
-import dagre from 'dagre';
+import * as dagre from 'dagre';
 
 export interface Person {
   id: string;
@@ -102,7 +102,7 @@ const createNode = (person: Person): Node => ({
   id: person.id,
   type: 'person',
   position: { x: Math.random() * 500, y: Math.random() * 500 },
-  data: person,
+  data: { ...person } as Record<string, unknown>,
   sourcePosition: Position.Bottom,
   targetPosition: Position.Top,
 });
