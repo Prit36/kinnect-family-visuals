@@ -2,7 +2,7 @@
  * Main hook for family tree operations
  */
 
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useFamilyTreeStore } from '../stores/familyTreeStore';
 import { useUIStore } from '../stores/uiStore';
 import { useSearchStore } from '../stores/searchStore';
@@ -18,7 +18,7 @@ export const useFamilyTree = () => {
   const { toast } = useToast();
 
   // Update filtered people when people or search filters change
-  React.useEffect(() => {
+  useEffect(() => {
     searchStore._updateFilteredPeople(familyTreeStore.people);
   }, [familyTreeStore.people, searchStore.searchTerm, searchStore.gender, searchStore.isAlive, searchStore.hasImage]);
 
