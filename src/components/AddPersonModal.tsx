@@ -1,7 +1,6 @@
-
 import React, { useState, useRef } from 'react';
 import { X, Upload, User, Calendar, MapPin, Briefcase, Heart, Phone, Mail, Globe } from 'lucide-react';
-import { useFamilyTreeStore, relationshipTypes } from '../store/familyTreeStore';
+import { useFamilyTreeStore, relationshipTypes, maritalStatusOptions } from '../store/familyTreeStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -50,7 +49,7 @@ const AddPersonModal: React.FC<AddPersonModalProps> = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('');
   const [website, setWebsite] = useState('');
   const [isAlive, setIsAlive] = useState(true);
-  const [maritalStatus, setMaritalStatus] = useState('');
+  const [maritalStatus, setMaritalStatus] = useState<'single' | 'married' | 'divorced' | 'widowed' | ''>('');
   const [nickname, setNickname] = useState('');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -78,7 +77,7 @@ const AddPersonModal: React.FC<AddPersonModalProps> = ({ isOpen, onClose }) => {
   };
 
   const calculateAge = (birthDate: string, deathDate?: string) => {
-    if (!birthDate) return null;
+    if (!birthDate) return undefined;
     const birth = new Date(birthDate);
     const end = deathDate ? new Date(deathDate) : new Date();
     const age = end.getFullYear() - birth.getFullYear();
@@ -266,16 +265,16 @@ const AddPersonModal: React.FC<AddPersonModalProps> = ({ isOpen, onClose }) => {
 
                 <div className="space-y-2">
                   <Label htmlFor="maritalStatus">Marital Status</Label>
-                  <Select value={maritalStatus} onValueChange={setMaritalStatus}>
+                  <Select value={maritalStatus} onValueChange={(value: 'single' | 'married' | 'divorced' | 'widowed' | '') => setMaritalStatus(value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="single">Single</SelectItem>
-                      <SelectItem value="married">Married</SelectItem>
-                      <SelectItem value="divorced">Divorced</SelectItem>
-                      <SelectItem value="widowed">Widowed</SelectItem>
-                      <SelectItem value="separated">Separated</SelectItem>
+                      {maritalStatusOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -309,7 +308,7 @@ const AddPersonModal: React.FC<AddPersonModalProps> = ({ isOpen, onClose }) => {
                         <SelectContent>
                           {relationshipTypes.map((type) => (
                             <SelectItem key={type} value={type}>
-                              {type}
+                              {type.charAt(0).toUpperCase() + type.slice(1)}
                             </SelectItem>
                           ))}
                         </SelectContent>

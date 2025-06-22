@@ -1,6 +1,7 @@
+
 import { create } from 'zustand';
 import { Node, Edge, Position } from '@xyflow/react';
-import dagre from '@dagre/dagre';
+import dagre from 'dagre';
 
 export interface Person {
   id: string;
@@ -33,13 +34,14 @@ export interface SearchFilters {
   gender?: 'male' | 'female' | 'other';
   isAlive?: boolean;
   hasImage?: boolean;
+  ageRange?: [number, number];
 }
 
 export const relationshipTypes = [
-  { value: 'parent', label: 'Parent' },
-  { value: 'child', label: 'Child' },
-  { value: 'spouse', label: 'Spouse' },
-  { value: 'sibling', label: 'Sibling' },
+  'parent',
+  'child', 
+  'spouse',
+  'sibling'
 ];
 
 export const genderOptions = [
@@ -76,10 +78,10 @@ interface FamilyTreeState {
   searchFilters: SearchFilters;
   
   // Actions
-  addPerson: (person: Person) => void;
+  addPerson: (person: Omit<Person, 'id'>) => string;
   removePerson: (id: string) => void;
   updatePerson: (id: string, updates: Partial<Person>) => void;
-  addRelationship: (relationship: Relationship) => void;
+  addRelationship: (parentId: string, childId: string, type: string) => void;
   removeRelationship: (id: string) => void;
   setSelectedNode: (id: string | null) => void;
   updateNodePosition: (id: string, position: { x: number; y: number }) => void;
@@ -89,6 +91,8 @@ interface FamilyTreeState {
   toggleFullscreen: () => void;
   setSearchFilters: (filters: Partial<SearchFilters>) => void;
   getFilteredPeople: () => Person[];
+  getPersonById: (id: string) => Person | undefined;
+  getRelationships: (personId: string) => Relationship[];
   exportData: () => string;
   importData: (jsonString: string) => void;
   clearData: () => void;
@@ -262,9 +266,13 @@ export const useFamilyTreeStore = create<FamilyTreeState>((set, get) => ({
     gender: undefined,
     isAlive: undefined,
     hasImage: undefined,
+    ageRange: undefined,
   },
 
-  addPerson: (person: Person) => {
+  addPerson: (personData: Omit<Person, 'id'>) => {
+    const id = `person-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const person: Person = { ...personData, id };
+    
     set((state) => {
       const newPeople = [...state.people, person];
       const newNodes = [...state.nodes, createNode(person)];
@@ -273,6 +281,8 @@ export const useFamilyTreeStore = create<FamilyTreeState>((set, get) => ({
         nodes: newNodes,
       };
     });
+    
+    return id;
   },
 
   removePerson: (id: string) => {
@@ -292,7 +302,14 @@ export const useFamilyTreeStore = create<FamilyTreeState>((set, get) => ({
     }));
   },
 
-  addRelationship: (relationship: Relationship) => {
+  addRelationship: (parentId: string, childId: string, type: string) => {
+    const relationship: Relationship = {
+      id: `rel-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      parentId,
+      childId,
+      type: type as 'parent' | 'child' | 'spouse' | 'sibling',
+    };
+    
     set((state) => ({
       relationships: [...state.relationships, relationship],
       edges: [...state.edges, createEdge(relationship)],
@@ -380,6 +397,16 @@ export const useFamilyTreeStore = create<FamilyTreeState>((set, get) => ({
       
       return matchesSearch && matchesGender && matchesAlive && matchesImage;
     });
+  },
+
+  getPersonById: (id: string) => {
+    const { people } = get();
+    return people.find(person => person.id === id);
+  },
+
+  getRelationships: (personId: string) => {
+    const { relationships } = get();
+    return relationships.filter(rel => rel.parentId === personId || rel.childId === personId);
   },
 
   exportData: () => {
