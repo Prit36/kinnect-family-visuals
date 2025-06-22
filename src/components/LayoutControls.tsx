@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Grid, Circle, TreePine, Shuffle, BarChart3, Maximize, Minimize } from 'lucide-react';
+import { Grid, Circle, TreePine, Shuffle, BarChart3, Maximize, Minimize, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -26,6 +26,8 @@ const LayoutControls: React.FC = () => {
     toggleStatistics, 
     isFullscreen, 
     toggleFullscreen,
+    nodeViewMode,
+    setNodeViewMode,
     darkMode 
   } = useFamilyTreeStore();
 
@@ -42,6 +44,11 @@ const LayoutControls: React.FC = () => {
   const handleLayoutChange = (value: string) => {
     console.log('Layout changing to:', value);
     setLayout(value);
+  };
+
+  const handleViewModeChange = (value: string) => {
+    console.log('View mode changing to:', value);
+    setNodeViewMode(value as 'normal' | 'fullImage');
   };
 
   const handleFullscreenToggle = () => {
@@ -74,6 +81,38 @@ const LayoutControls: React.FC = () => {
                   </div>
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>View:</span>
+          <Select value={nodeViewMode} onValueChange={handleViewModeChange}>
+            <SelectTrigger className={`w-32 ${darkMode ? 'border-gray-600 bg-gray-800/50 text-gray-200' : 'bg-white/80 backdrop-blur-sm'}`}>
+              <div className="flex items-center space-x-2">
+                <Eye size={16} />
+                <SelectValue />
+              </div>
+            </SelectTrigger>
+            <SelectContent className={darkMode ? 'bg-gray-800 border-gray-600' : ''}>
+              <SelectItem 
+                value="normal"
+                className={darkMode ? 'text-gray-200 hover:bg-gray-700 focus:bg-gray-700' : ''}
+              >
+                <div className="flex items-center space-x-2">
+                  <Eye size={16} />
+                  <span>Normal</span>
+                </div>
+              </SelectItem>
+              <SelectItem 
+                value="fullImage"
+                className={darkMode ? 'text-gray-200 hover:bg-gray-700 focus:bg-gray-700' : ''}
+              >
+                <div className="flex items-center space-x-2">
+                  <Eye size={16} />
+                  <span>Full Image</span>
+                </div>
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
