@@ -87,7 +87,9 @@ const SearchAndFilter: React.FC = () => {
                 <Label className={`text-sm ${darkMode ? 'text-gray-300' : ''}`}>Gender</Label>
                 <Select
                   value={searchFilters.gender || ''}
-                  onValueChange={(value) => updateFilters({ gender: value || undefined })}
+                  onValueChange={(value) => updateFilters({ 
+                    gender: value === '' ? undefined : (value as 'male' | 'female' | 'other')
+                  })}
                 >
                   <SelectTrigger className={`mt-1 ${darkMode ? 'border-gray-600 bg-gray-700 text-gray-200' : ''}`}>
                     <SelectValue placeholder="All genders" />

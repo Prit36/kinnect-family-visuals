@@ -222,7 +222,7 @@ export const useFamilyTreeStore = create<FamilyTreeState>()(
         set((state) => {
           const newNodes = [...state.nodes, {
             id: newPerson.id,
-            data: newPerson as Record<string, unknown>,
+            data: newPerson as unknown as Record<string, unknown>,
             type: 'person',
             position: { x: 0, y: 0 },
           }];
@@ -367,7 +367,7 @@ export const useFamilyTreeStore = create<FamilyTreeState>()(
             set((state) => {
               const nodes = state.people.map(person => ({
                 id: person.id,
-                data: person as Record<string, unknown>,
+                data: person as unknown as Record<string, unknown>,
                 type: 'person',
                 position: { x: 0, y: 0 },
               }));
@@ -400,4 +400,6 @@ export const useFamilyTreeStore = create<FamilyTreeState>()(
 );
 
 // Initialize nodes and edges on store creation
-useFamilyTreeStore.getState().autoLayout();
+setTimeout(() => {
+  useFamilyTreeStore.getState().autoLayout();
+}, 0);
