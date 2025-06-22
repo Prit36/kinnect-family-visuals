@@ -88,14 +88,14 @@ const SearchAndFilter: React.FC = () => {
                 <Select
                   value={searchFilters.gender || ''}
                   onValueChange={(value) => updateFilters({ 
-                    gender: value === '' ? undefined : (value as 'male' | 'female' | 'other')
+                    gender: value === 'all' ? undefined : (value as 'male' | 'female' | 'other')
                   })}
                 >
                   <SelectTrigger className={`mt-1 ${darkMode ? 'border-gray-600 bg-gray-700 text-gray-200' : ''}`}>
                     <SelectValue placeholder="All genders" />
                   </SelectTrigger>
                   <SelectContent className={darkMode ? 'bg-gray-800 border-gray-600' : ''}>
-                    <SelectItem value="">All genders</SelectItem>
+                    <SelectItem value="all">All genders</SelectItem>
                     <SelectItem value="male">Male</SelectItem>
                     <SelectItem value="female">Female</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
@@ -109,7 +109,7 @@ const SearchAndFilter: React.FC = () => {
                   value={searchFilters.isAlive === undefined ? '' : searchFilters.isAlive.toString()}
                   onValueChange={(value) => 
                     updateFilters({ 
-                      isAlive: value === '' ? undefined : value === 'true'
+                      isAlive: value === 'all' ? undefined : value === 'true'
                     })
                   }
                 >
@@ -117,7 +117,7 @@ const SearchAndFilter: React.FC = () => {
                     <SelectValue placeholder="All members" />
                   </SelectTrigger>
                   <SelectContent className={darkMode ? 'bg-gray-800 border-gray-600' : ''}>
-                    <SelectItem value="">All members</SelectItem>
+                    <SelectItem value="all">All members</SelectItem>
                     <SelectItem value="true">Living</SelectItem>
                     <SelectItem value="false">Deceased</SelectItem>
                   </SelectContent>

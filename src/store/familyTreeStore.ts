@@ -57,73 +57,6 @@ export const layoutOptions = [
   { value: 'radial', label: 'Radial' },
 ] as const;
 
-// Mock Data
-const mockData = {
-  people: [
-    {
-      id: '1',
-      name: 'John Doe',
-      gender: 'male' as const,
-      birthDate: '1950-01-01',
-      isAlive: true,
-      occupation: 'Engineer',
-      image: 'https://images.unsplash.com/photo-1573496896036-798281cbb6e8?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8bWFufGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60',
-    },
-    {
-      id: '2',
-      name: 'Jane Smith',
-      gender: 'female' as const,
-      birthDate: '1955-05-05',
-      deathDate: '2020-03-10',
-      isAlive: false,
-      occupation: 'Teacher',
-      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8d29tYW58ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60',
-    },
-    {
-      id: '3',
-      name: 'Alice Doe',
-      gender: 'female' as const,
-      birthDate: '1975-03-15',
-      isAlive: true,
-      occupation: 'Doctor',
-      image: 'https://images.unsplash.com/photo-1589156191108-c7377e255179?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTB8fHdvdW1hbnxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60',
-    },
-    {
-      id: '4',
-      name: 'Bob Doe',
-      gender: 'male' as const,
-      birthDate: '1978-11-20',
-      isAlive: true,
-      occupation: 'Lawyer',
-      image: 'https://images.unsplash.com/photo-1552058544-f2b08422aa9a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTZ8fG1hbnxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60',
-    },
-    {
-      id: '5',
-      name: 'Charlie Smith',
-      gender: 'male' as const,
-      birthDate: '2000-07-04',
-      isAlive: true,
-      occupation: 'Student',
-    },
-    {
-      id: '6',
-      name: 'Diana Smith',
-      gender: 'female' as const,
-      birthDate: '2003-12-25',
-      isAlive: true,
-      occupation: 'Student',
-    },
-  ],
-  relationships: [
-    { id: '1', source: '1', target: '3', type: 'parent' as const },
-    { id: '2', source: '2', target: '3', type: 'parent' as const },
-    { id: '3', source: '1', target: '4', type: 'parent' as const },
-    { id: '4', source: '2', target: '4', type: 'parent' as const },
-    { id: '5', source: '3', target: '5', type: 'parent' as const },
-    { id: '6', source: '4', target: '6', type: 'parent' as const },
-  ],
-};
-
 const getLayoutedElements = (
   nodes: Node[],
   edges: Edge[],
@@ -194,8 +127,8 @@ interface FamilyTreeState {
 }
 
 export const useFamilyTreeStore = create<FamilyTreeState>((set, get) => ({
-  people: mockData.people,
-  relationships: mockData.relationships,
+  people: [],
+  relationships: [],
   nodes: [],
   edges: [],
   selectedNodeId: null,
