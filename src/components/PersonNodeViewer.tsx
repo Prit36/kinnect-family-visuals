@@ -29,6 +29,9 @@ interface PersonNodeViewerProps {
 const PersonNodeViewer: React.FC<PersonNodeViewerProps> = ({ id, data, selected }) => {
   const { nodeViewMode } = useFamilyTreeStore();
 
+  // Create a complete Person object with id
+  const personData = { id, ...data };
+
   return (
     <>
       <Handle
@@ -38,9 +41,9 @@ const PersonNodeViewer: React.FC<PersonNodeViewerProps> = ({ id, data, selected 
       />
       
       {nodeViewMode === 'fullImage' ? (
-        <PersonNodeFullImage id={id} data={data} selected={selected} />
+        <PersonNodeFullImage id={id} data={personData} selected={selected} />
       ) : (
-        <PersonNode id={id} data={data} selected={selected} />
+        <PersonNode id={id} data={personData} selected={selected} />
       )}
       
       <Handle
