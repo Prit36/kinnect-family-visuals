@@ -1,51 +1,63 @@
+/**
+ * Main family tree visualization component
+ */
+
+import React, { useCallback, useMemo } from 'react';
 import {
-  addEdge,
+  ReactFlow,
   Background,
   BackgroundVariant,
-  Connection,
   Controls,
   MiniMap,
   NodeTypes,
-  ReactFlow,
-  useEdgesState,
   useNodesState,
-} from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
-import React, { useCallback, useEffect, useMemo } from "react";
-import { useFamilyTreeStore } from "../store/familyTreeStore";
-import PersonNodeViewer from "./PersonNodeViewer";
+  useEdgesState,
+  addEdge,
+  Connection,
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
+import { PersonNodeViewer } from '../molecules/PersonNodeViewer';
+import { useFamilyTree } from '../../hooks/useFamilyTree';
+import { useTheme } from '../../contexts/ThemeContext';
+import { THEME_CONFIG } from '../../constants';
 
 const nodeTypes: NodeTypes = {
   person: PersonNodeViewer,
 };
 
-const FamilyTree: React.FC = () => {
+interface FamilyTreeVisualizationProps {
+  className?: string;
+}
+
+export const FamilyTreeVisualization: React.FC<FamilyTreeVisualizationProps> = ({
+  className,
+}) => {
   const {
     nodes,
     edges,
-    updateNodePosition,
-    darkMode,
-    getFilteredPeople,
-    searchFilters,
+    filteredPeople,
     people,
+    searchFilters,
     setSelectedNode,
-  } = useFamilyTreeStore();
-  const clearSelection = () => setSelectedNode(null);
-
+  } = useFamilyTree();
+  
+  const { darkMode } = useTheme();
+  
   const [flowNodes, setNodes, onNodesChange] = useNodesState(nodes);
   const [flowEdges, setEdges, onEdgesChange] = useEdgesState(edges);
 
   // Filter nodes based on search filters
-  const filteredPeople = getFilteredPeople();
   const filteredNodeIds = new Set(filteredPeople.map((person) => person.id));
 
   const visibleNodes = useMemo(() => {
-    if (
-      !searchFilters.searchTerm &&
-      !searchFilters.gender &&
-      searchFilters.isAlive === undefined &&
-      searchFilters.hasImage === undefined
-    ) {
+    const hasActiveFilters = Boolean(
+      searchFilters.searchTerm ||
+      searchFilters.gender ||
+      searchFilters.isAlive !== undefined ||
+      searchFilters.hasImage !== undefined
+    );
+
+    if (!hasActiveFilters) {
       return flowNodes;
     }
 
@@ -61,11 +73,11 @@ const FamilyTree: React.FC = () => {
   }, [flowEdges, visibleNodes]);
 
   // Sync store state with React Flow state
-  useEffect(() => {
+  React.useEffect(() => {
     setNodes(nodes);
   }, [nodes, setNodes]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     setEdges(edges);
   }, [edges, setEdges]);
 
@@ -76,29 +88,33 @@ const FamilyTree: React.FC = () => {
 
   const onNodeDragStop = useCallback(
     (_: any, node: any) => {
-      updateNodePosition(node.id, node.position);
+      // Update node position in store
+      // This would be handled by the store
     },
-    [updateNodePosition]
+    []
   );
+
+  const onPaneClick = useCallback(() => {
+    setSelectedNode(null);
+  }, [setSelectedNode]);
 
   const miniMapStyle = useMemo(
     () => ({
       height: 120,
-      backgroundColor: darkMode ? "#1f2937" : "#f8fafc",
-      border: `1px solid ${darkMode ? "#374151" : "#e2e8f0"}`,
-      borderRadius: "12px",
+      backgroundColor: darkMode ? '#1f2937' : '#f8fafc',
+      border: `1px solid ${darkMode ? '#374151' : '#e2e8f0'}`,
+      borderRadius: '12px',
     }),
     [darkMode]
   );
 
-  const backgroundClass = darkMode ? "bg-gray-900" : "bg-slate-50";
-
+  const backgroundClass = darkMode ? 'bg-gray-900' : 'bg-slate-50';
   const controlsClass = darkMode
-    ? "bg-gray-800 border-gray-600 text-gray-200"
-    : "bg-white border-gray-200";
+    ? 'bg-gray-800 border-gray-600 text-gray-200'
+    : 'bg-white border-gray-200';
 
   return (
-    <div className={`w-full h-full ${backgroundClass}`}>
+    <div className={`w-full h-full ${backgroundClass} ${className}`}>
       <ReactFlow
         nodes={visibleNodes}
         edges={visibleEdges}
@@ -112,31 +128,24 @@ const FamilyTree: React.FC = () => {
         defaultEdgeOptions={{
           style: {
             strokeWidth: 3,
-            stroke: darkMode ? "#60a5fa" : "#3b82f6",
+            stroke: darkMode ? '#60a5fa' : '#3b82f6',
           },
-          type: "smoothstep",
+          type: 'smoothstep',
           animated: true,
         }}
-        onPaneClick={clearSelection}
+        onPaneClick={onPaneClick}
       >
         <Controls className={`${controlsClass} rounded-xl shadow-xl border`} />
         <MiniMap
           style={miniMapStyle}
           className="shadow-xl"
           nodeColor={(node) => {
-            if (node.type === "person") {
+            if (node.type === 'person') {
               const gender = node.data?.gender;
-              if (!node.data?.isAlive) return "#9ca3af";
-              switch (gender) {
-                case "male":
-                  return "#3b82f6";
-                case "female":
-                  return "#ec4899";
-                default:
-                  return "#8b5cf6";
-              }
+              if (!node.data?.isAlive) return '#9ca3af';
+              return THEME_CONFIG.COLORS.GENDER[gender] || '#64748b';
             }
-            return "#64748b";
+            return '#64748b';
           }}
           nodeBorderRadius={8}
         />
@@ -144,7 +153,7 @@ const FamilyTree: React.FC = () => {
           variant={BackgroundVariant.Dots}
           gap={24}
           size={2}
-          color={darkMode ? "#374151" : "#e2e8f0"}
+          color={darkMode ? '#374151' : '#e2e8f0'}
           className="opacity-60"
         />
       </ReactFlow>
@@ -157,8 +166,8 @@ const FamilyTree: React.FC = () => {
         <div
           className={`absolute top-4 left-4 z-10 px-4 py-2 rounded-lg shadow-lg ${
             darkMode
-              ? "bg-gray-800 text-gray-200 border border-gray-600"
-              : "bg-white text-gray-800 border border-gray-200"
+              ? 'bg-gray-800 text-gray-200 border border-gray-600'
+              : 'bg-white text-gray-800 border border-gray-200'
           }`}
         >
           <p className="text-sm font-medium">
@@ -169,5 +178,3 @@ const FamilyTree: React.FC = () => {
     </div>
   );
 };
-
-export default FamilyTree;

@@ -1,4 +1,8 @@
-import React from "react";
+/**
+ * Person detail panel component
+ */
+
+import React from 'react';
 import {
   User,
   Calendar,
@@ -10,21 +14,25 @@ import {
   Heart,
   Edit,
   X,
-} from "lucide-react";
-import { useFamilyTreeStore } from "../store/familyTreeStore";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { Avatar } from '../atoms/Avatar';
+import { StatusIndicator } from '../atoms/StatusIndicator';
+import { useFamilyTree } from '../../hooks/useFamilyTree';
+import { useTheme } from '../../contexts/ThemeContext';
+import { formatDate, calculateAge } from '../../utils';
 
-const PersonDetailPanel: React.FC = () => {
+export const PersonDetailPanel: React.FC = () => {
   const {
     selectedNodeId,
     getPersonById,
     getRelationships,
     people,
     setSelectedNode,
-    darkMode,
-  } = useFamilyTreeStore();
+  } = useFamilyTree();
+  
+  const { darkMode } = useTheme();
 
   if (!selectedNodeId) return null;
 
@@ -34,36 +42,23 @@ const PersonDetailPanel: React.FC = () => {
   if (!person) return null;
 
   const getRelatedPerson = (relationship: any) => {
-    const relatedId =
-      relationship.parentId === selectedNodeId
-        ? relationship.childId
-        : relationship.parentId;
-    return people.find((p) => p.id === relatedId);
+    return people.find((p) => p.id === relationship.relatedPersonId);
   };
 
-  const getAge = () => {
-    if (!person.birthDate) return null;
-    const birthYear = new Date(person.birthDate).getFullYear();
-    const endYear = person.deathDate
-      ? new Date(person.deathDate).getFullYear()
-      : new Date().getFullYear();
-    return endYear - birthYear;
-  };
+  const age = calculateAge(person.birthDate || '', person.deathDate);
 
   return (
     <div
       className={`fixed right-4 top-20 bottom-4 w-80 rounded-lg shadow-xl border z-20 overflow-y-auto ${
-        darkMode ? "bg-gray-800 border-gray-600" : "bg-white border-gray-200"
+        darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200'
       }`}
     >
       <div
         className={`sticky top-0 border-b p-4 flex items-center justify-between ${
-          darkMode ? "bg-gray-800 border-gray-600" : "bg-white border-gray-200"
+          darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200'
         }`}
       >
-        <h2
-          className={`text-lg font-semibold ${darkMode ? "text-gray-200" : ""}`}
-        >
+        <h2 className={`text-lg font-semibold ${darkMode ? 'text-gray-200' : ''}`}>
           Person Details
         </h2>
         <Button variant="ghost" size="sm" onClick={() => setSelectedNode(null)}>
@@ -74,37 +69,19 @@ const PersonDetailPanel: React.FC = () => {
       <div className="p-4 space-y-4">
         {/* Profile Section */}
         <div className="text-center">
-          {person.image ? (
-            <img
-              src={person.image}
-              alt={person.name}
-              className="w-20 h-20 rounded-full object-cover mx-auto border-4 border-gray-200"
-            />
-          ) : (
-            <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mx-auto border-4 border-gray-200">
-              <User size={32} className="text-gray-500" />
-            </div>
-          )}
-          <h3
-            className={`mt-2 text-xl font-bold ${
-              darkMode ? "text-gray-200" : "text-gray-900"
-            }`}
-          >
+          <div className="flex justify-center mb-3">
+            <Avatar person={person} size="xl" showStatusRing />
+          </div>
+          <h3 className={`text-xl font-bold ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
             {person.name}
           </h3>
           {person.nickname && (
-            <p
-              className={`italic ${
-                darkMode ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
+            <p className={`italic ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               "{person.nickname}"
             </p>
           )}
           <div className="flex justify-center mt-2">
-            <Badge variant={person.isAlive ? "default" : "secondary"}>
-              {person.isAlive ? "Living" : "Deceased"}
-            </Badge>
+            <StatusIndicator isAlive={person.isAlive} />
           </div>
         </div>
 
@@ -112,11 +89,7 @@ const PersonDetailPanel: React.FC = () => {
 
         {/* Basic Information */}
         <div className="space-y-3">
-          <h4
-            className={`font-semibold ${
-              darkMode ? "text-gray-200" : "text-gray-900"
-            }`}
-          >
+          <h4 className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
             Basic Information
           </h4>
 
@@ -131,12 +104,8 @@ const PersonDetailPanel: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Calendar size={16} className="text-gray-500" />
               <div className="text-sm">
-                <span>
-                  Born: {new Date(person.birthDate).toLocaleDateString()}
-                </span>
-                {getAge() && (
-                  <span className="text-gray-600 ml-2">({getAge()} years)</span>
-                )}
+                <span>Born: {formatDate(person.birthDate)}</span>
+                {age && <span className="text-gray-600 ml-2">({age} years)</span>}
               </div>
             </div>
           )}
@@ -144,9 +113,7 @@ const PersonDetailPanel: React.FC = () => {
           {person.deathDate && (
             <div className="flex items-center space-x-2">
               <Calendar size={16} className="text-gray-500" />
-              <span className="text-sm">
-                Died: {new Date(person.deathDate).toLocaleDateString()}
-              </span>
+              <span className="text-sm">Died: {formatDate(person.deathDate)}</span>
             </div>
           )}
 
@@ -177,11 +144,7 @@ const PersonDetailPanel: React.FC = () => {
           <>
             <Separator />
             <div className="space-y-3">
-              <h4
-                className={`font-semibold ${
-                  darkMode ? "text-gray-200" : "text-gray-900"
-                }`}
-              >
+              <h4 className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                 Contact Information
               </h4>
 
@@ -231,18 +194,10 @@ const PersonDetailPanel: React.FC = () => {
           <>
             <Separator />
             <div className="space-y-2">
-              <h4
-                className={`font-semibold ${
-                  darkMode ? "text-gray-200" : "text-gray-900"
-                }`}
-              >
+              <h4 className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                 Biography
               </h4>
-              <p
-                className={`text-sm leading-relaxed ${
-                  darkMode ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
+              <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 {person.biography}
               </p>
             </div>
@@ -254,11 +209,7 @@ const PersonDetailPanel: React.FC = () => {
           <>
             <Separator />
             <div className="space-y-3">
-              <h4
-                className={`font-semibold ${
-                  darkMode ? "text-gray-200" : "text-gray-900"
-                }`}
-              >
+              <h4 className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                 Family Relationships
               </h4>
               <div className="space-y-2">
@@ -270,22 +221,14 @@ const PersonDetailPanel: React.FC = () => {
                     <div
                       key={index}
                       className={`flex items-center justify-between p-2 rounded ${
-                        darkMode ? "bg-gray-700" : "bg-gray-50"
+                        darkMode ? 'bg-gray-700' : 'bg-gray-50'
                       }`}
                     >
                       <div>
-                        <p
-                          className={`text-sm font-medium ${
-                            darkMode ? "text-gray-200" : ""
-                          }`}
-                        >
+                        <p className={`text-sm font-medium ${darkMode ? 'text-gray-200' : ''}`}>
                           {relatedPerson.name}
                         </p>
-                        <p
-                          className={`text-xs ${
-                            darkMode ? "text-gray-400" : "text-gray-600"
-                          }`}
-                        >
+                        <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                           {rel.type}
                         </p>
                       </div>
@@ -307,5 +250,3 @@ const PersonDetailPanel: React.FC = () => {
     </div>
   );
 };
-
-export default PersonDetailPanel;
