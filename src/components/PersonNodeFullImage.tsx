@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { Handle, Position, NodeProps } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
 import {
   User,
   Trash2,
@@ -25,8 +25,10 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-interface PersonNodeProps extends Omit<NodeProps, "data"> {
+interface PersonNodeProps {
+  id: string;
   data: Person;
+  selected?: boolean;
 }
 
 // Helper to get initials from a name
@@ -52,7 +54,7 @@ const getLifespan = (person: Person) => {
   return `Born ${birthYear}`;
 };
 
-const PersonNodeFullImage: React.FC<PersonNodeProps> = memo(({ data, id }) => {
+const PersonNodeFullImage: React.FC<PersonNodeProps> = memo(({ data, id, selected }) => {
   const { removePerson, setSelectedNode, selectedNodeId, darkMode } =
     useFamilyTreeStore();
   const isSelected = selectedNodeId === id;

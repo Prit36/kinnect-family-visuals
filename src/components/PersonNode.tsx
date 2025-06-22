@@ -6,7 +6,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { Handle, NodeProps, Position } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Briefcase,
@@ -23,8 +23,10 @@ import {
 import React, { memo } from "react";
 import { Person, useFamilyTreeStore } from "../store/familyTreeStore";
 
-interface PersonNodeProps extends Omit<NodeProps, "data"> {
+interface PersonNodeProps {
+  id: string;
   data: Person;
+  selected?: boolean;
 }
 
 // Helper to get initials from a name
@@ -48,7 +50,7 @@ const getLifespan = (person: Person) => {
   return `Born ${birthYear}`;
 };
 
-const ModernPersonNode: React.FC<PersonNodeProps> = memo(({ data, id }) => {
+const ModernPersonNode: React.FC<PersonNodeProps> = memo(({ data, id, selected }) => {
   const { removePerson, setSelectedNode, selectedNodeId, darkMode } =
     useFamilyTreeStore();
 
