@@ -1,21 +1,20 @@
-
-import React from 'react';
-import { Handle, Position } from '@xyflow/react';
-import PersonNode from './PersonNode';
-import PersonNodeFullImage from './PersonNodeFullImage';
-import { useFamilyTreeStore } from '../store/familyTreeStore';
+import React from "react";
+import { Handle, Position } from "@xyflow/react";
+import PersonNode from "./PersonNode";
+import PersonNodeFullImage from "./PersonNodeFullImage";
+import { useFamilyTreeStore } from "../store/familyTreeStore";
 
 interface PersonNodeViewerProps {
   id: string;
   data: {
     name: string;
     nickname?: string;
-    gender: 'male' | 'female' | 'other';
+    gender: "male" | "female" | "other";
     birthDate?: string;
     deathDate?: string;
     birthPlace?: string;
     occupation?: string;
-    maritalStatus?: 'single' | 'married' | 'divorced' | 'widowed';
+    maritalStatus?: "single" | "married" | "divorced" | "widowed";
     isAlive: boolean;
     image?: string;
     phone?: string;
@@ -26,7 +25,11 @@ interface PersonNodeViewerProps {
   selected?: boolean;
 }
 
-const PersonNodeViewer: React.FC<PersonNodeViewerProps> = ({ id, data, selected }) => {
+const PersonNodeViewer: React.FC<PersonNodeViewerProps> = ({
+  id,
+  data,
+  selected,
+}) => {
   const { nodeViewMode } = useFamilyTreeStore();
 
   // Create a complete Person object with id
@@ -39,13 +42,13 @@ const PersonNodeViewer: React.FC<PersonNodeViewerProps> = ({ id, data, selected 
         position={Position.Top}
         className="w-3 h-3 !bg-blue-500 border-2 border-white"
       />
-      
-      {nodeViewMode === 'fullImage' ? (
+
+      {nodeViewMode === "fullImage" ? (
         <PersonNodeFullImage id={id} data={personData} selected={selected} />
       ) : (
         <PersonNode id={id} data={personData} selected={selected} />
       )}
-      
+
       <Handle
         type="source"
         position={Position.Bottom}

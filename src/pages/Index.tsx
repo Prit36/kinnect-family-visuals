@@ -1,22 +1,15 @@
-import React, { useState, useEffect } from "react";
-import {
-  Plus,
-  Users,
-  TreePine,
-  Search,
-  Settings,
-  Sparkles,
-} from "lucide-react";
-import FamilyTree from "../components/FamilyTree";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { Plus, Settings, TreePine } from "lucide-react";
+import { useEffect, useState } from "react";
 import AddPersonModal from "../components/AddPersonModal";
+import ExportImport from "../components/ExportImport";
+import FamilyTree from "../components/FamilyTree";
+import LayoutControls from "../components/LayoutControls";
 import PersonDetailPanel from "../components/PersonDetailPanel";
 import SearchAndFilter from "../components/SearchAndFilter";
 import StatisticsPanel from "../components/StatisticsPanel";
-import LayoutControls from "../components/LayoutControls";
-import ExportImport from "../components/ExportImport";
 import { useFamilyTreeStore } from "../store/familyTreeStore";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -209,24 +202,10 @@ const Index = () => {
       {/* Person Detail Panel */}
       {selectedNodeId && <PersonDetailPanel />}
 
-      {/* Floating Add Button */}
-      {people.length > 0 && !isFullscreen && (
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-xl hover:shadow-2xl transition-all duration-300 z-20 transform hover:scale-110 group"
-          title="Add Family Member"
-        >
-          <Plus
-            size={28}
-            className="group-hover:rotate-90 transition-transform duration-300"
-          />
-        </button>
-      )}
-
       {/* Enhanced Instructions */}
       {people.length > 0 && !isFullscreen && !selectedNodeId && (
         <div
-          className={`fixed bottom-8 left-8 rounded-2xl shadow-xl p-6 max-w-sm z-10 border transition-all duration-300 hover:shadow-2xl ${
+          className={`fixed bottom-4 left-16 rounded-2xl shadow-xl p-6 max-w-sm z-10 border transition-all duration-300 hover:shadow-2xl ${
             darkMode
               ? "bg-gray-800 border-gray-600 text-gray-200"
               : "bg-white border-gray-200"
