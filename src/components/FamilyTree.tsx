@@ -1,4 +1,3 @@
-
 import React, { useCallback, useMemo, useEffect } from 'react';
 import {
   ReactFlow,
@@ -14,11 +13,11 @@ import {
   BackgroundVariant,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import PersonNode from './PersonNode';
+import PersonNodeViewer from './PersonNodeViewer';
 import { useFamilyTreeStore } from '../store/familyTreeStore';
 
 const nodeTypes: NodeTypes = {
-  person: PersonNode,
+  person: PersonNodeViewer,
 };
 
 const FamilyTree: React.FC = () => {

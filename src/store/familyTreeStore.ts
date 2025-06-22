@@ -1,127 +1,122 @@
-
 import { create } from 'zustand';
-import { Node, Edge, Position } from '@xyflow/react';
-import * as dagre from 'dagre';
+import { Edge, Node } from '@xyflow/react';
+import { persist } from 'zustand/middleware';
+import dagre from 'dagre';
 
-export interface Person {
+const dagreGraph = new dagre.graphlib.Graph();
+dagreGraph.setDefaultEdgeLabel(() => ({}));
+
+const nodeWidth = 172;
+const nodeHeight = 172;
+
+interface Person {
   id: string;
   name: string;
   nickname?: string;
-  age?: number;
-  gender?: 'male' | 'female' | 'other';
+  gender: 'male' | 'female' | 'other';
   birthDate?: string;
   deathDate?: string;
   birthPlace?: string;
   occupation?: string;
+  maritalStatus?: 'single' | 'married' | 'divorced' | 'widowed';
+  isAlive: boolean;
+  image?: string;
   phone?: string;
   email?: string;
   website?: string;
   biography?: string;
-  maritalStatus?: 'single' | 'married' | 'divorced' | 'widowed';
-  image?: string;
-  isAlive: boolean;
 }
 
-export interface Relationship {
+interface Relationship {
   id: string;
-  parentId: string;
-  childId: string;
-  type: 'parent' | 'child' | 'spouse' | 'sibling';
+  source: string;
+  target: string;
+  type: 'parent' | 'spouse' | 'child';
 }
 
-export interface SearchFilters {
+interface SearchFilters {
   searchTerm: string;
   gender?: 'male' | 'female' | 'other';
   isAlive?: boolean;
   hasImage?: boolean;
-  ageRange?: [number, number];
 }
 
-export const relationshipTypes = [
-  'parent',
-  'child', 
-  'spouse',
-  'sibling'
-];
+// Mock Data
+const mockData = {
+  people: [
+    {
+      id: '1',
+      name: 'John Doe',
+      gender: 'male',
+      birthDate: '1950-01-01',
+      isAlive: true,
+      occupation: 'Engineer',
+      image: 'https://images.unsplash.com/photo-1573496896036-798281cbb6e8?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8bWFufGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60',
+    },
+    {
+      id: '2',
+      name: 'Jane Smith',
+      gender: 'female',
+      birthDate: '1955-05-05',
+      deathDate: '2020-03-10',
+      isAlive: false,
+      occupation: 'Teacher',
+      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8d29tYW58ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60',
+    },
+    {
+      id: '3',
+      name: 'Alice Doe',
+      gender: 'female',
+      birthDate: '1975-03-15',
+      isAlive: true,
+      occupation: 'Doctor',
+      image: 'https://images.unsplash.com/photo-1589156191108-c7377e255179?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTB8fHdvdW1hbnxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60',
+    },
+    {
+      id: '4',
+      name: 'Bob Doe',
+      gender: 'male',
+      birthDate: '1978-11-20',
+      isAlive: true,
+      occupation: 'Lawyer',
+      image: 'https://images.unsplash.com/photo-1552058544-f2b08422aa9a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTZ8fG1hbnxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60',
+    },
+    {
+      id: '5',
+      name: 'Charlie Smith',
+      gender: 'male',
+      birthDate: '2000-07-04',
+      isAlive: true,
+      occupation: 'Student',
+    },
+    {
+      id: '6',
+      name: 'Diana Smith',
+      gender: 'female',
+      birthDate: '2003-12-25',
+      isAlive: true,
+      occupation: 'Student',
+    },
+  ],
+  relationships: [
+    { id: '1', source: '1', target: '3', type: 'parent' },
+    { id: '2', source: '2', target: '3', type: 'parent' },
+    { id: '3', source: '1', target: '4', type: 'parent' },
+    { id: '4', source: '2', target: '4', type: 'parent' },
+    { id: '5', source: '3', target: '5', type: 'parent' },
+    { id: '6', source: '4', target: '6', type: 'parent' },
+  ],
+};
 
-export const genderOptions = [
-  { value: 'male', label: 'Male' },
-  { value: 'female', label: 'Female' },
-  { value: 'other', label: 'Other' },
-];
-
-export const maritalStatusOptions = [
-  { value: 'single', label: 'Single' },
-  { value: 'married', label: 'Married' },
-  { value: 'divorced', label: 'Divorced' },
-  { value: 'widowed', label: 'Widowed' },
-];
-
-export const layoutOptions = [
-  { value: 'hierarchical', label: 'Hierarchical' },
-  { value: 'circular', label: 'Circular' },
-  { value: 'grid', label: 'Grid' },
-  { value: 'radial', label: 'Radial' },
-  { value: 'force', label: 'Force-Directed' },
-];
-
-interface FamilyTreeState {
-  people: Person[];
-  relationships: Relationship[];
-  nodes: Node[];
-  edges: Edge[];
-  selectedNodeId: string | null;
-  darkMode: boolean;
-  currentLayout: string;
-  showStatistics: boolean;
-  isFullscreen: boolean;
-  searchFilters: SearchFilters;
-  
-  // Actions
-  addPerson: (person: Omit<Person, 'id'>) => string;
-  removePerson: (id: string) => void;
-  updatePerson: (id: string, updates: Partial<Person>) => void;
-  addRelationship: (parentId: string, childId: string, type: string) => void;
-  removeRelationship: (id: string) => void;
-  setSelectedNode: (id: string | null) => void;
-  updateNodePosition: (id: string, position: { x: number; y: number }) => void;
-  toggleDarkMode: () => void;
-  setLayout: (layout: string) => void;
-  toggleStatistics: () => void;
-  toggleFullscreen: () => void;
-  setSearchFilters: (filters: Partial<SearchFilters>) => void;
-  getFilteredPeople: () => Person[];
-  getPersonById: (id: string) => Person | undefined;
-  getRelationships: (personId: string) => Relationship[];
-  exportData: () => string;
-  importData: (jsonString: string) => void;
-  clearData: () => void;
-}
-
-const createNode = (person: Person): Node => ({
-  id: person.id,
-  type: 'person',
-  position: { x: Math.random() * 500, y: Math.random() * 500 },
-  data: { ...person } as Record<string, unknown>,
-  sourcePosition: Position.Bottom,
-  targetPosition: Position.Top,
-});
-
-const createEdge = (relationship: Relationship): Edge => ({
-  id: relationship.id,
-  source: relationship.parentId,
-  target: relationship.childId,
-  type: 'smoothstep',
-  animated: true,
-});
-
-const applyHierarchicalLayout = (nodes: Node[], edges: Edge[]): Node[] => {
-  const dagreGraph = new dagre.graphlib.Graph();
-  dagreGraph.setDefaultEdgeLabel(() => ({}));
-  dagreGraph.setGraph({ rankdir: 'TB', nodesep: 100, ranksep: 150 });
+const getLayoutedElements = (
+  nodes: Node[],
+  edges: Edge[],
+  direction: 'TB' | 'LR' = 'TB'
+): { nodes: Node[]; edges: Edge[] } => {
+  dagreGraph.setGraph({ rankdir: direction });
 
   nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: 300, height: 400 });
+    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
   });
 
   edges.forEach((edge) => {
@@ -130,314 +125,176 @@ const applyHierarchicalLayout = (nodes: Node[], edges: Edge[]): Node[] => {
 
   dagre.layout(dagreGraph);
 
-  return nodes.map((node) => {
+  nodes.forEach((node) => {
     const nodeWithPosition = dagreGraph.node(node.id);
-    return {
-      ...node,
-      position: {
-        x: nodeWithPosition.x - 150,
-        y: nodeWithPosition.y - 200,
-      },
-      sourcePosition: Position.Bottom,
-      targetPosition: Position.Top,
+    node.targetPosition = direction === 'LR' ? 'left' : 'top';
+    node.sourcePosition = direction === 'LR' ? 'right' : 'bottom';
+
+    // We are shifting the dagre node position (defined center ) to the top left
+    // so it matches the React Flow node anchor point
+    node.position = {
+      x: nodeWithPosition.x - nodeWidth / 2,
+      y: nodeWithPosition.y - nodeHeight / 2,
     };
+
+    return node;
   });
+
+  return { nodes, edges };
 };
 
-const applyCircularLayout = (nodes: Node[]): Node[] => {
-  const center = { x: 400, y: 300 };
-  const radius = Math.max(200, nodes.length * 30);
-  
-  return nodes.map((node, index) => {
-    const angle = (2 * Math.PI * index) / nodes.length;
-    return {
-      ...node,
-      position: {
-        x: center.x + radius * Math.cos(angle),
-        y: center.y + radius * Math.sin(angle),
-      },
-      sourcePosition: Position.Bottom,
-      targetPosition: Position.Top,
-    };
-  });
-};
+interface FamilyTreeState {
+  people: Person[];
+  relationships: Relationship[];
+  nodes: Node[];
+  edges: Edge[];
+  selectedNodeId: string | null;
+  darkMode: boolean;
+  searchFilters: SearchFilters;
+  nodeViewMode: 'normal' | 'fullImage';
+  addPerson: (person: Omit<Person, 'id'>) => void;
+  updatePerson: (id: string, updates: Partial<Person>) => void;
+  removePerson: (id: string) => void;
+  addRelationship: (relationship: Omit<Relationship, 'id'>) => void;
+  removeRelationship: (id: string) => void;
+  setSelectedNode: (id: string | null) => void;
+  toggleDarkMode: () => void;
+  updateSearchFilters: (filters: Partial<SearchFilters>) => void;
+  getFilteredPeople: () => Person[];
+  updateNodePosition: (nodeId: string, position: { x: number; y: number }) => void;
+  autoLayout: () => void;
+  setNodeViewMode: (mode: 'normal' | 'fullImage') => void;
+}
 
-const applyGridLayout = (nodes: Node[]): Node[] => {
-  const cols = Math.ceil(Math.sqrt(nodes.length));
-  const spacing = { x: 350, y: 450 };
-  
-  return nodes.map((node, index) => {
-    const row = Math.floor(index / cols);
-    const col = index % cols;
-    return {
-      ...node,
-      position: {
-        x: col * spacing.x + 50,
-        y: row * spacing.y + 50,
-      },
-      sourcePosition: Position.Bottom,
-      targetPosition: Position.Top,
-    };
-  });
-};
-
-const applyRadialLayout = (nodes: Node[], edges: Edge[]): Node[] => {
-  if (nodes.length === 0) return nodes;
-  
-  const center = { x: 400, y: 300 };
-  const levels: string[][] = [];
-  const visited = new Set<string>();
-  
-  // Find root nodes (nodes with no incoming edges)
-  const rootNodes = nodes.filter(node => 
-    !edges.some(edge => edge.target === node.id)
-  );
-  
-  if (rootNodes.length === 0) {
-    // If no clear root, use the first node
-    levels[0] = [nodes[0].id];
-    visited.add(nodes[0].id);
-  } else {
-    levels[0] = rootNodes.map(node => node.id);
-    rootNodes.forEach(node => visited.add(node.id));
-  }
-  
-  // Build levels
-  let currentLevel = 0;
-  while (levels[currentLevel] && levels[currentLevel].length > 0) {
-    const nextLevel: string[] = [];
-    levels[currentLevel].forEach(nodeId => {
-      edges.forEach(edge => {
-        if (edge.source === nodeId && !visited.has(edge.target)) {
-          nextLevel.push(edge.target);
-          visited.add(edge.target);
-        }
-      });
-    });
-    if (nextLevel.length > 0) {
-      levels[currentLevel + 1] = nextLevel;
-      currentLevel++;
-    } else {
-      break;
-    }
-  }
-  
-  return nodes.map(node => {
-    let level = 0;
-    let indexInLevel = 0;
-    
-    for (let i = 0; i < levels.length; i++) {
-      const index = levels[i].indexOf(node.id);
-      if (index !== -1) {
-        level = i;
-        indexInLevel = index;
-        break;
-      }
-    }
-    
-    const radius = level * 200 + 100;
-    const nodesInLevel = levels[level]?.length || 1;
-    const angle = (2 * Math.PI * indexInLevel) / nodesInLevel;
-    
-    return {
-      ...node,
-      position: {
-        x: center.x + radius * Math.cos(angle),
-        y: center.y + radius * Math.sin(angle),
-      },
-      sourcePosition: Position.Bottom,
-      targetPosition: Position.Top,
-    };
-  });
-};
-
-export const useFamilyTreeStore = create<FamilyTreeState>((set, get) => ({
-  people: [],
-  relationships: [],
-  nodes: [],
-  edges: [],
-  selectedNodeId: null,
-  darkMode: false,
-  currentLayout: 'hierarchical',
-  showStatistics: false,
-  isFullscreen: false,
-  searchFilters: {
-    searchTerm: '',
-    gender: undefined,
-    isAlive: undefined,
-    hasImage: undefined,
-    ageRange: undefined,
-  },
-
-  addPerson: (personData: Omit<Person, 'id'>) => {
-    const id = `person-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const person: Person = { ...personData, id };
-    
-    set((state) => {
-      const newPeople = [...state.people, person];
-      const newNodes = [...state.nodes, createNode(person)];
-      return {
-        people: newPeople,
-        nodes: newNodes,
-      };
-    });
-    
-    return id;
-  },
-
-  removePerson: (id: string) => {
-    set((state) => ({
-      people: state.people.filter(p => p.id !== id),
-      nodes: state.nodes.filter(n => n.id !== id),
-      edges: state.edges.filter(e => e.source !== id && e.target !== id),
-      relationships: state.relationships.filter(r => r.parentId !== id && r.childId !== id),
-      selectedNodeId: state.selectedNodeId === id ? null : state.selectedNodeId,
-    }));
-  },
-
-  updatePerson: (id: string, updates: Partial<Person>) => {
-    set((state) => ({
-      people: state.people.map(p => p.id === id ? { ...p, ...updates } : p),
-      nodes: state.nodes.map(n => n.id === id ? { ...n, data: { ...n.data, ...updates } } : n),
-    }));
-  },
-
-  addRelationship: (parentId: string, childId: string, type: string) => {
-    const relationship: Relationship = {
-      id: `rel-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      parentId,
-      childId,
-      type: type as 'parent' | 'child' | 'spouse' | 'sibling',
-    };
-    
-    set((state) => ({
-      relationships: [...state.relationships, relationship],
-      edges: [...state.edges, createEdge(relationship)],
-    }));
-  },
-
-  removeRelationship: (id: string) => {
-    set((state) => ({
-      relationships: state.relationships.filter(r => r.id !== id),
-      edges: state.edges.filter(e => e.id !== id),
-    }));
-  },
-
-  setSelectedNode: (id: string | null) => {
-    set({ selectedNodeId: id });
-  },
-
-  updateNodePosition: (id: string, position: { x: number; y: number }) => {
-    set((state) => ({
-      nodes: state.nodes.map(node =>
-        node.id === id ? { ...node, position } : node
-      ),
-    }));
-  },
-
-  toggleDarkMode: () => {
-    set((state) => ({ darkMode: !state.darkMode }));
-  },
-
-  setLayout: (layout: string) => {
-    set((state) => {
-      let updatedNodes = [...state.nodes];
-      
-      switch (layout) {
-        case 'hierarchical':
-          updatedNodes = applyHierarchicalLayout(updatedNodes, state.edges);
-          break;
-        case 'circular':
-          updatedNodes = applyCircularLayout(updatedNodes);
-          break;
-        case 'grid':
-          updatedNodes = applyGridLayout(updatedNodes);
-          break;
-        case 'radial':
-          updatedNodes = applyRadialLayout(updatedNodes, state.edges);
-          break;
-        default:
-          break;
-      }
-      
-      return {
-        currentLayout: layout,
-        nodes: updatedNodes,
-      };
-    });
-  },
-
-  toggleStatistics: () => {
-    set((state) => ({ showStatistics: !state.showStatistics }));
-  },
-
-  toggleFullscreen: () => {
-    set((state) => ({ isFullscreen: !state.isFullscreen }));
-  },
-
-  setSearchFilters: (filters: Partial<SearchFilters>) => {
-    set((state) => ({
-      searchFilters: { ...state.searchFilters, ...filters }
-    }));
-  },
-
-  getFilteredPeople: () => {
-    const { people, searchFilters } = get();
-    
-    return people.filter(person => {
-      const matchesSearch = !searchFilters.searchTerm || 
-        person.name.toLowerCase().includes(searchFilters.searchTerm.toLowerCase()) ||
-        person.nickname?.toLowerCase().includes(searchFilters.searchTerm.toLowerCase()) ||
-        person.occupation?.toLowerCase().includes(searchFilters.searchTerm.toLowerCase());
-      
-      const matchesGender = !searchFilters.gender || person.gender === searchFilters.gender;
-      const matchesAlive = searchFilters.isAlive === undefined || person.isAlive === searchFilters.isAlive;
-      const matchesImage = searchFilters.hasImage === undefined || 
-        (searchFilters.hasImage ? !!person.image : !person.image);
-      
-      return matchesSearch && matchesGender && matchesAlive && matchesImage;
-    });
-  },
-
-  getPersonById: (id: string) => {
-    const { people } = get();
-    return people.find(person => person.id === id);
-  },
-
-  getRelationships: (personId: string) => {
-    const { relationships } = get();
-    return relationships.filter(rel => rel.parentId === personId || rel.childId === personId);
-  },
-
-  exportData: () => {
-    const { people, relationships } = get();
-    return JSON.stringify({ people, relationships }, null, 2);
-  },
-
-  importData: (jsonString: string) => {
-    try {
-      const data = JSON.parse(jsonString);
-      const people = data.people || [];
-      const relationships = data.relationships || [];
-      
-      set({
-        people,
-        relationships,
-        nodes: people.map(createNode),
-        edges: relationships.map(createEdge),
-      });
-    } catch (error) {
-      console.error('Failed to import data:', error);
-    }
-  },
-
-  clearData: () => {
-    set({
-      people: [],
-      relationships: [],
+export const useFamilyTreeStore = create<FamilyTreeState>()(
+  persist(
+    (set, get) => ({
+      people: mockData.people,
+      relationships: mockData.relationships,
       nodes: [],
       edges: [],
       selectedNodeId: null,
-    });
-  },
-}));
+      darkMode: false,
+      nodeViewMode: 'normal',
+      searchFilters: {
+        searchTerm: '',
+        gender: undefined,
+        isAlive: undefined,
+        hasImage: undefined,
+      },
+
+      addPerson: (person) => {
+        const newPerson: Person = { id: crypto.randomUUID(), ...person };
+        set((state) => ({
+          people: [...state.people, newPerson],
+        }));
+        set((state) => {
+          const newNodes = [...state.nodes, {
+            id: newPerson.id,
+            data: newPerson,
+            type: 'person',
+            position: { x: 0, y: 0 },
+          }];
+          const { nodes, edges } = getLayoutedElements(newNodes, state.edges);
+          return { nodes, edges };
+        });
+      },
+
+      updatePerson: (id, updates) => {
+        set((state) => ({
+          people: state.people.map((person) =>
+            person.id === id ? { ...person, ...updates } : person
+          ),
+        }));
+        set((state) => ({
+          nodes: state.nodes.map((node) =>
+            node.id === id ? { ...node, data: { ...node.data, ...updates } } : node
+          ),
+        }));
+      },
+
+      removePerson: (id) => {
+        set((state) => ({
+          people: state.people.filter((person) => person.id !== id),
+        }));
+        set((state) => ({
+          nodes: state.nodes.filter((node) => node.id !== id),
+          edges: state.edges.filter(
+            (edge) => edge.source !== id && edge.target !== id
+          ),
+        }));
+      },
+
+      addRelationship: (relationship) => {
+        const newRelationship = { id: crypto.randomUUID(), ...relationship };
+        set((state) => ({
+          relationships: [...state.relationships, newRelationship],
+        }));
+        set((state) => {
+          const newEdges = [...state.edges, {
+            id: newRelationship.id,
+            source: newRelationship.source,
+            target: newRelationship.target,
+          }];
+          const { nodes, edges } = getLayoutedElements(state.nodes, newEdges);
+          return { nodes, edges };
+        });
+      },
+
+      removeRelationship: (id) => {
+        set((state) => ({
+          relationships: state.relationships.filter(
+            (relationship) => relationship.id !== id
+          ),
+        }));
+        set((state) => ({
+          edges: state.edges.filter((edge) => edge.id !== id),
+        }));
+      },
+
+      setSelectedNode: (id) => set({ selectedNodeId: id }),
+      
+      toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
+      
+      updateSearchFilters: (filters) =>
+        set((state) => ({
+          searchFilters: { ...state.searchFilters, ...filters },
+        })),
+      
+      getFilteredPeople: () => {
+        const { people, searchFilters } = get();
+        return people.filter((person) => {
+          const matchesSearch = !searchFilters.searchTerm || 
+            person.name.toLowerCase().includes(searchFilters.searchTerm.toLowerCase()) ||
+            person.nickname?.toLowerCase().includes(searchFilters.searchTerm.toLowerCase()) ||
+            person.occupation?.toLowerCase().includes(searchFilters.searchTerm.toLowerCase());
+          
+          const matchesGender = !searchFilters.gender || person.gender === searchFilters.gender;
+          const matchesAlive = searchFilters.isAlive === undefined || person.isAlive === searchFilters.isAlive;
+          const matchesImage = searchFilters.hasImage === undefined || !!person.image === searchFilters.hasImage;
+          
+          return matchesSearch && matchesGender && matchesAlive && matchesImage;
+        });
+      },
+      
+      updateNodePosition: (nodeId, position) =>
+        set((state) => ({
+          nodes: state.nodes.map((node) =>
+            node.id === nodeId ? { ...node, position } : node
+          ),
+        })),
+      
+      setNodeViewMode: (mode) => set({ nodeViewMode: mode }),
+
+      autoLayout: () => {
+        set((state) => {
+          const { nodes, edges } = getLayoutedElements(state.nodes, state.edges);
+          return { nodes, edges };
+        });
+      },
+    }),
+    {
+      name: 'family-tree-storage',
+    }
+  )
+);
