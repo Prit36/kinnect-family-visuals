@@ -1,3 +1,21 @@
+import React, { memo } from "react";
+import { Handle, Position, NodeProps } from "@xyflow/react";
+import {
+  User,
+  Trash2,
+  Calendar,
+  MapPin,
+  Briefcase,
+  Phone,
+  Mail,
+  Globe,
+  Heart,
+  Info,
+  Edit,
+  Star,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useFamilyTreeStore, Person } from "../store/familyTreeStore";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -6,22 +24,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { Handle, NodeProps, Position } from "@xyflow/react";
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  Briefcase,
-  Calendar,
-  Edit,
-  Globe,
-  Heart,
-  Mail,
-  MapPin,
-  Phone,
-  Star,
-  Trash2,
-} from "lucide-react";
-import React, { memo } from "react";
-import { Person, useFamilyTreeStore } from "../store/familyTreeStore";
 
 interface PersonNodeProps extends Omit<NodeProps, "data"> {
   data: Person;
@@ -30,8 +32,10 @@ interface PersonNodeProps extends Omit<NodeProps, "data"> {
 // Helper to get initials from a name
 const getInitials = (name: string) => {
   const names = name.split(" ");
-  if (names.length === 1) return names[0].substring(0, 2);
-  return names[0].charAt(0) + names[names.length - 1].charAt(0);
+  if (names.length === 1) return names?.[0]?.substring(0, 2) ?? "";
+  return (
+    (names?.[0]?.charAt(0) ?? "") + (names?.[names.length - 1]?.charAt(0) ?? "")
+  );
 };
 
 // Helper for displaying the lifespan
@@ -48,10 +52,9 @@ const getLifespan = (person: Person) => {
   return `Born ${birthYear}`;
 };
 
-const ModernPersonNode: React.FC<PersonNodeProps> = memo(({ data, id }) => {
+const PersonNodeFullImage: React.FC<PersonNodeProps> = memo(({ data, id }) => {
   const { removePerson, setSelectedNode, selectedNodeId, darkMode } =
     useFamilyTreeStore();
-
   const isSelected = selectedNodeId === id;
 
   const handleNodeClick = () => {
@@ -74,11 +77,10 @@ const ModernPersonNode: React.FC<PersonNodeProps> = memo(({ data, id }) => {
     }
   };
 
+  // A small component for consistently styled info rows
   const InfoRow: React.FC<{
     icon: React.ReactNode;
-
     label: string | React.ReactNode;
-
     tooltip?: string;
   }> = ({ icon, label, tooltip }) => (
     <Tooltip>
@@ -115,7 +117,7 @@ const ModernPersonNode: React.FC<PersonNodeProps> = memo(({ data, id }) => {
           animate={{ scale: isSelected ? 1.05 : 1 }}
           transition={{ duration: 0.2 }}
           className={cn(
-            "w-72 rounded-2xl shadow-xl transition-all duration-300 cursor-pointer",
+            "w-72 rounded-2xl shadow-xl transition-all duration-300 cursor-pointer overflow-hidden",
             "bg-white/80 dark:bg-gray-800/80 backdrop-blur-md",
             "border-2",
             isSelected
@@ -123,57 +125,34 @@ const ModernPersonNode: React.FC<PersonNodeProps> = memo(({ data, id }) => {
               : "border-transparent group-hover:border-gray-300/50 dark:group-hover:border-gray-600/50"
           )}
         >
-          {/* --- Main Content --- */}
-          <div className="p-4 flex flex-col items-center text-center">
-            {/* --- Avatar --- */}
-            <div className="relative mb-3">
+          {/* --- Top Section with Image and Name --- */}
+          <div className="relative">
+            {data.image ? (
+              <img
+                src={data.image}
+                alt={data.name}
+                className="w-full h-auto object-cover rounded-t-2xl"
+              />
+            ) : (
               <div
                 className={cn(
-                  "absolute -inset-1 rounded-full",
-                  statusRingColor()
+                  "w-full h-28 flex items-center justify-center font-bold text-4xl text-white rounded-t-2xl",
+                  !data.isAlive
+                    ? "bg-gray-500"
+                    : data.gender === "male"
+                    ? "bg-blue-500"
+                    : data.gender === "female"
+                    ? "bg-pink-500"
+                    : "bg-purple-500"
                 )}
-              />
-              {data.image ? (
-                <img
-                  src={data.image}
-                  alt={data.name}
-                  className="w-20 h-20 rounded-full object-cover border-4 border-white dark:border-gray-800"
-                />
-              ) : (
-                <div
-                  className={cn(
-                    "w-20 h-20 rounded-full flex items-center justify-center font-bold text-2xl text-white border-4 border-white dark:border-gray-800",
-
-                    !data.isAlive
-                      ? "bg-gray-500"
-                      : data.gender === "male"
-                      ? "bg-blue-500"
-                      : data.gender === "female"
-                      ? "bg-pink-500"
-                      : "bg-purple-500"
-                  )}
-                >
-                  {getInitials(data.name)}
-                </div>
-              )}
-              {data.maritalStatus === "married" && (
-                <div className="absolute -bottom-1 -right-1 bg-gradient-to-tr from-amber-400 to-yellow-500 rounded-full p-1 shadow-md border-2 border-white dark:border-gray-800">
-                  <Star size={12} className="text-white" />
-                </div>
-              )}
-            </div>
-            {/* --- Name & Lifespan --- */}
-            <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">
-              {data.name}
-            </h3>
-            {data.nickname && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-                "{data.nickname}"
-              </p>
+              >
+                {getInitials(data.name)}
+              </div>
             )}
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-              {getLifespan(data)}
-            </p>
+            <div className="absolute bottom-0 left-0 w-full bg-black/20 text-white p-2 rounded-b-2xl bg-gradient-to-t from-black/50 to-transparent">
+              <h3 className="font-semibold text-lg text-center">{data.name}</h3>
+              <p className="text-xs text-center">{getLifespan(data)}</p>
+            </div>
           </div>
           {/* --- Collapsible Details Section --- */}
           <AnimatePresence>
@@ -182,13 +161,13 @@ const ModernPersonNode: React.FC<PersonNodeProps> = memo(({ data, id }) => {
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.4, ease: "easeInOut" }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
                 className="overflow-hidden border-t border-gray-200/80 dark:border-gray-700/80"
               >
-                <div className="p-4 space-y-3">
+                <div className="p-4 space-y-2">
                   {data.birthDate && (
                     <InfoRow
-                      icon={<Calendar size={16} />}
+                      icon={<Calendar size={14} />}
                       label={new Date(data.birthDate).toLocaleDateString()}
                       tooltip={`Born on ${new Date(
                         data.birthDate
@@ -197,20 +176,20 @@ const ModernPersonNode: React.FC<PersonNodeProps> = memo(({ data, id }) => {
                   )}
                   {data.birthPlace && (
                     <InfoRow
-                      icon={<MapPin size={16} />}
+                      icon={<MapPin size={14} />}
                       label={data.birthPlace}
                       tooltip={`Birth Place: ${data.birthPlace}`}
                     />
                   )}
                   {data.occupation && (
                     <InfoRow
-                      icon={<Briefcase size={16} />}
+                      icon={<Briefcase size={14} />}
                       label={data.occupation}
                     />
                   )}
                   {data.maritalStatus && (
                     <InfoRow
-                      icon={<Heart size={16} />}
+                      icon={<Heart size={14} />}
                       label={
                         data.maritalStatus.charAt(0).toUpperCase() +
                         data.maritalStatus.slice(1)
@@ -218,15 +197,15 @@ const ModernPersonNode: React.FC<PersonNodeProps> = memo(({ data, id }) => {
                     />
                   )}
                   {data.phone && (
-                    <InfoRow icon={<Phone size={16} />} label={data.phone} />
+                    <InfoRow icon={<Phone size={14} />} label={data.phone} />
                   )}
                   {data.email && (
-                    <InfoRow icon={<Mail size={16} />} label={data.email} />
+                    <InfoRow icon={<Mail size={14} />} label={data.email} />
                   )}
                   {data.website && (
                     <div className="flex items-center space-x-3">
                       <Globe
-                        size={16}
+                        size={14}
                         className="text-gray-400 flex-shrink-0"
                       />
                       <a
@@ -270,7 +249,7 @@ const ModernPersonNode: React.FC<PersonNodeProps> = memo(({ data, id }) => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="w-8 h-8 p-0 text-red-500 hover:text-red-500 hover:bg-red-100/50 dark:hover:bg-red-900/20"
+                        className="w-8 h-8 p-0  text-red-500 hover:text-red-500 hover:bg-red-100/50 dark:hover:bg-red-900/20"
                         onClick={(e) => {
                           handleActionClick(e);
                           removePerson(id);
@@ -280,7 +259,7 @@ const ModernPersonNode: React.FC<PersonNodeProps> = memo(({ data, id }) => {
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Remove Person</p>
+                      <p>RemovePerson</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -293,4 +272,4 @@ const ModernPersonNode: React.FC<PersonNodeProps> = memo(({ data, id }) => {
   );
 });
 
-export default ModernPersonNode;
+export default PersonNodeFullImage;
