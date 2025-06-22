@@ -1,5 +1,6 @@
+
 import { create } from 'zustand';
-import { Edge, Node } from '@xyflow/react';
+import { Edge, Node, Position } from '@xyflow/react';
 import { persist } from 'zustand/middleware';
 import dagre from 'dagre';
 
@@ -9,7 +10,7 @@ dagreGraph.setDefaultEdgeLabel(() => ({}));
 const nodeWidth = 172;
 const nodeHeight = 172;
 
-interface Person {
+export interface Person {
   id: string;
   name: string;
   nickname?: string;
@@ -27,19 +28,35 @@ interface Person {
   biography?: string;
 }
 
-interface Relationship {
+export interface Relationship {
   id: string;
   source: string;
   target: string;
   type: 'parent' | 'spouse' | 'child';
 }
 
-interface SearchFilters {
+export interface SearchFilters {
   searchTerm: string;
   gender?: 'male' | 'female' | 'other';
   isAlive?: boolean;
   hasImage?: boolean;
 }
+
+export const relationshipTypes = ['parent', 'spouse', 'child'] as const;
+
+export const maritalStatusOptions = [
+  { value: 'single', label: 'Single' },
+  { value: 'married', label: 'Married' },
+  { value: 'divorced', label: 'Divorced' },
+  { value: 'widowed', label: 'Widowed' },
+] as const;
+
+export const layoutOptions = [
+  { value: 'hierarchical', label: 'Hierarchical' },
+  { value: 'circular', label: 'Circular' },
+  { value: 'grid', label: 'Grid' },
+  { value: 'radial', label: 'Radial' },
+] as const;
 
 // Mock Data
 const mockData = {
@@ -47,7 +64,7 @@ const mockData = {
     {
       id: '1',
       name: 'John Doe',
-      gender: 'male',
+      gender: 'male' as const,
       birthDate: '1950-01-01',
       isAlive: true,
       occupation: 'Engineer',
@@ -56,7 +73,7 @@ const mockData = {
     {
       id: '2',
       name: 'Jane Smith',
-      gender: 'female',
+      gender: 'female' as const,
       birthDate: '1955-05-05',
       deathDate: '2020-03-10',
       isAlive: false,
@@ -66,7 +83,7 @@ const mockData = {
     {
       id: '3',
       name: 'Alice Doe',
-      gender: 'female',
+      gender: 'female' as const,
       birthDate: '1975-03-15',
       isAlive: true,
       occupation: 'Doctor',
@@ -75,7 +92,7 @@ const mockData = {
     {
       id: '4',
       name: 'Bob Doe',
-      gender: 'male',
+      gender: 'male' as const,
       birthDate: '1978-11-20',
       isAlive: true,
       occupation: 'Lawyer',
@@ -84,7 +101,7 @@ const mockData = {
     {
       id: '5',
       name: 'Charlie Smith',
-      gender: 'male',
+      gender: 'male' as const,
       birthDate: '2000-07-04',
       isAlive: true,
       occupation: 'Student',
@@ -92,19 +109,19 @@ const mockData = {
     {
       id: '6',
       name: 'Diana Smith',
-      gender: 'female',
+      gender: 'female' as const,
       birthDate: '2003-12-25',
       isAlive: true,
       occupation: 'Student',
     },
   ],
   relationships: [
-    { id: '1', source: '1', target: '3', type: 'parent' },
-    { id: '2', source: '2', target: '3', type: 'parent' },
-    { id: '3', source: '1', target: '4', type: 'parent' },
-    { id: '4', source: '2', target: '4', type: 'parent' },
-    { id: '5', source: '3', target: '5', type: 'parent' },
-    { id: '6', source: '4', target: '6', type: 'parent' },
+    { id: '1', source: '1', target: '3', type: 'parent' as const },
+    { id: '2', source: '2', target: '3', type: 'parent' as const },
+    { id: '3', source: '1', target: '4', type: 'parent' as const },
+    { id: '4', source: '2', target: '4', type: 'parent' as const },
+    { id: '5', source: '3', target: '5', type: 'parent' as const },
+    { id: '6', source: '4', target: '6', type: 'parent' as const },
   ],
 };
 
@@ -127,8 +144,8 @@ const getLayoutedElements = (
 
   nodes.forEach((node) => {
     const nodeWithPosition = dagreGraph.node(node.id);
-    node.targetPosition = direction === 'LR' ? 'left' : 'top';
-    node.sourcePosition = direction === 'LR' ? 'right' : 'bottom';
+    node.targetPosition = direction === 'LR' ? Position.Left : Position.Top;
+    node.sourcePosition = direction === 'LR' ? Position.Right : Position.Bottom;
 
     // We are shifting the dagre node position (defined center ) to the top left
     // so it matches the React Flow node anchor point
@@ -152,18 +169,29 @@ interface FamilyTreeState {
   darkMode: boolean;
   searchFilters: SearchFilters;
   nodeViewMode: 'normal' | 'fullImage';
-  addPerson: (person: Omit<Person, 'id'>) => void;
+  currentLayout: string;
+  showStatistics: boolean;
+  isFullscreen: boolean;
+  addPerson: (person: Omit<Person, 'id'>) => string;
   updatePerson: (id: string, updates: Partial<Person>) => void;
   removePerson: (id: string) => void;
-  addRelationship: (relationship: Omit<Relationship, 'id'>) => void;
+  addRelationship: (source: string, target: string, type: string) => void;
   removeRelationship: (id: string) => void;
   setSelectedNode: (id: string | null) => void;
   toggleDarkMode: () => void;
   updateSearchFilters: (filters: Partial<SearchFilters>) => void;
+  setSearchFilters: (filters: Partial<SearchFilters>) => void;
   getFilteredPeople: () => Person[];
   updateNodePosition: (nodeId: string, position: { x: number; y: number }) => void;
   autoLayout: () => void;
   setNodeViewMode: (mode: 'normal' | 'fullImage') => void;
+  setLayout: (layout: string) => void;
+  toggleStatistics: () => void;
+  toggleFullscreen: () => void;
+  getPersonById: (id: string) => Person | undefined;
+  getRelationships: (personId: string) => Array<{ type: string; parentId?: string; childId?: string }>;
+  exportData: () => string;
+  importData: (data: string) => void;
 }
 
 export const useFamilyTreeStore = create<FamilyTreeState>()(
@@ -176,6 +204,9 @@ export const useFamilyTreeStore = create<FamilyTreeState>()(
       selectedNodeId: null,
       darkMode: false,
       nodeViewMode: 'normal',
+      currentLayout: 'hierarchical',
+      showStatistics: false,
+      isFullscreen: false,
       searchFilters: {
         searchTerm: '',
         gender: undefined,
@@ -191,13 +222,14 @@ export const useFamilyTreeStore = create<FamilyTreeState>()(
         set((state) => {
           const newNodes = [...state.nodes, {
             id: newPerson.id,
-            data: newPerson,
+            data: newPerson as Record<string, unknown>,
             type: 'person',
             position: { x: 0, y: 0 },
           }];
           const { nodes, edges } = getLayoutedElements(newNodes, state.edges);
           return { nodes, edges };
         });
+        return newPerson.id;
       },
 
       updatePerson: (id, updates) => {
@@ -225,8 +257,13 @@ export const useFamilyTreeStore = create<FamilyTreeState>()(
         }));
       },
 
-      addRelationship: (relationship) => {
-        const newRelationship = { id: crypto.randomUUID(), ...relationship };
+      addRelationship: (source, target, type) => {
+        const newRelationship = { 
+          id: crypto.randomUUID(), 
+          source, 
+          target, 
+          type: type as 'parent' | 'spouse' | 'child'
+        };
         set((state) => ({
           relationships: [...state.relationships, newRelationship],
         }));
@@ -260,6 +297,11 @@ export const useFamilyTreeStore = create<FamilyTreeState>()(
         set((state) => ({
           searchFilters: { ...state.searchFilters, ...filters },
         })),
+
+      setSearchFilters: (filters) =>
+        set((state) => ({
+          searchFilters: { ...state.searchFilters, ...filters },
+        })),
       
       getFilteredPeople: () => {
         const { people, searchFilters } = get();
@@ -286,6 +328,64 @@ export const useFamilyTreeStore = create<FamilyTreeState>()(
       
       setNodeViewMode: (mode) => set({ nodeViewMode: mode }),
 
+      setLayout: (layout) => set({ currentLayout: layout }),
+
+      toggleStatistics: () => set((state) => ({ showStatistics: !state.showStatistics })),
+
+      toggleFullscreen: () => set((state) => ({ isFullscreen: !state.isFullscreen })),
+
+      getPersonById: (id) => {
+        const { people } = get();
+        return people.find(person => person.id === id);
+      },
+
+      getRelationships: (personId) => {
+        const { relationships } = get();
+        return relationships.filter(rel => 
+          rel.source === personId || rel.target === personId
+        ).map(rel => ({
+          type: rel.type,
+          parentId: rel.source === personId ? rel.target : rel.source,
+          childId: rel.target === personId ? rel.source : rel.target,
+        }));
+      },
+
+      exportData: () => {
+        const { people, relationships } = get();
+        return JSON.stringify({ people, relationships }, null, 2);
+      },
+
+      importData: (data) => {
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.people && parsed.relationships) {
+            set({
+              people: parsed.people,
+              relationships: parsed.relationships,
+            });
+            // Regenerate nodes and edges
+            set((state) => {
+              const nodes = state.people.map(person => ({
+                id: person.id,
+                data: person as Record<string, unknown>,
+                type: 'person',
+                position: { x: 0, y: 0 },
+              }));
+              const edges = state.relationships.map(rel => ({
+                id: rel.id,
+                source: rel.source,
+                target: rel.target,
+              }));
+              const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges);
+              return { nodes: layoutedNodes, edges: layoutedEdges };
+            });
+          }
+        } catch (error) {
+          console.error('Failed to import data:', error);
+          throw error;
+        }
+      },
+
       autoLayout: () => {
         set((state) => {
           const { nodes, edges } = getLayoutedElements(state.nodes, state.edges);
@@ -298,3 +398,6 @@ export const useFamilyTreeStore = create<FamilyTreeState>()(
     }
   )
 );
+
+// Initialize nodes and edges on store creation
+useFamilyTreeStore.getState().autoLayout();

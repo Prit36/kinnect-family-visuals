@@ -109,8 +109,6 @@ const AddPersonModal: React.FC<AddPersonModalProps> = ({ isOpen, onClose }) => {
       return;
     }
 
-    const age = calculateAge(birthDate, isAlive ? undefined : deathDate);
-
     const personId = addPerson({
       name: name.trim(),
       image: imageUrl || undefined,
@@ -126,7 +124,6 @@ const AddPersonModal: React.FC<AddPersonModalProps> = ({ isOpen, onClose }) => {
       isAlive,
       maritalStatus: maritalStatus || undefined,
       nickname: nickname.trim() || undefined,
-      age,
     });
 
     if (selectedPerson && relationshipType) {

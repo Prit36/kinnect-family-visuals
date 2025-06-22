@@ -3,14 +3,6 @@ import React from 'react';
 import { Search, Filter, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
 import {
   Select,
   SelectContent,
@@ -18,134 +10,133 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { useFamilyTreeStore } from '../store/familyTreeStore';
 
 const SearchAndFilter: React.FC = () => {
-  const { searchFilters, setSearchFilters, getFilteredPeople, darkMode } = useFamilyTreeStore();
-  const filteredCount = getFilteredPeople().length;
-  
-  const hasActiveFilters = searchFilters.gender || 
-    searchFilters.isAlive !== undefined || 
-    searchFilters.hasImage !== undefined ||
-    searchFilters.searchTerm;
+  const { searchFilters, setSearchFilters, darkMode } = useFamilyTreeStore();
 
-  const clearAllFilters = () => {
+  const updateFilters = (updates: Partial<typeof searchFilters>) => {
+    setSearchFilters(updates);
+  };
+
+  const clearFilters = () => {
     setSearchFilters({
       searchTerm: '',
       gender: undefined,
       isAlive: undefined,
       hasImage: undefined,
-      ageRange: undefined,
     });
   };
 
+  const hasActiveFilters = searchFilters.searchTerm || 
+    searchFilters.gender || 
+    searchFilters.isAlive !== undefined || 
+    searchFilters.hasImage !== undefined;
+
   return (
     <div className="flex items-center space-x-2">
-      <div className="relative flex-1 max-w-md">
-        <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} size={16} />
+      <div className="relative">
+        <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
         <Input
           placeholder="Search family members..."
           value={searchFilters.searchTerm}
-          onChange={(e) => setSearchFilters({ searchTerm: e.target.value })}
-          className={`pl-10 ${darkMode ? 'bg-gray-800/50 border-gray-600 text-gray-200 placeholder-gray-400' : 'bg-white/80 backdrop-blur-sm'}`}
+          onChange={(e) => updateFilters({ searchTerm: e.target.value })}
+          className={`pl-10 w-64 ${darkMode ? 'border-gray-600 bg-gray-800/50 text-gray-200' : 'bg-white/80 backdrop-blur-sm'}`}
         />
       </div>
 
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className={`relative ${darkMode ? 'bg-gray-800/50 border-gray-600 text-gray-200 hover:bg-gray-700' : 'bg-white/80 backdrop-blur-sm border-gray-200'}`}
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className={`relative ${darkMode ? 'border-gray-600 bg-gray-800/50 text-gray-200 hover:bg-gray-700' : 'bg-white/80 backdrop-blur-sm'}`}
           >
             <Filter size={16} className="mr-2" />
             Filters
             {hasActiveFilters && (
-              <Badge variant="destructive" className="absolute -top-2 -right-2 w-5 h-5 p-0 text-xs">
-                !
-              </Badge>
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full" />
             )}
           </Button>
-        </SheetTrigger>
-        <SheetContent className={darkMode ? 'bg-gray-800 border-gray-600' : ''}>
-          <SheetHeader>
-            <SheetTitle className={darkMode ? 'text-gray-200' : ''}>Filter Family Members</SheetTitle>
-          </SheetHeader>
-          
-          <div className="space-y-6 mt-6">
-            {hasActiveFilters && (
-              <div className="flex items-center justify-between">
-                <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  Showing {filteredCount} members
-                </span>
-                <Button variant="ghost" size="sm" onClick={clearAllFilters}>
-                  <X size={14} className="mr-1" />
-                  Clear All
+        </PopoverTrigger>
+        <PopoverContent className={`w-80 ${darkMode ? 'bg-gray-800 border-gray-600' : ''}`} align="end">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className={`font-semibold ${darkMode ? 'text-gray-200' : ''}`}>Filters</h4>
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="h-auto p-1"
+                >
+                  <X size={14} />
                 </Button>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="gender-filter" className={darkMode ? 'text-gray-200' : ''}>Gender</Label>
-              <Select 
-                value={searchFilters.gender || ''} 
-                onValueChange={(value) => setSearchFilters({ gender: (value as 'male' | 'female' | 'other') || undefined })}
-              >
-                <SelectTrigger className={darkMode ? 'bg-gray-800 border-gray-600 text-gray-200' : ''}>
-                  <SelectValue placeholder="All genders" />
-                </SelectTrigger>
-                <SelectContent className={darkMode ? 'bg-gray-800 border-gray-600' : ''}>
-                  <SelectItem value="">All genders</SelectItem>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+              )}
             </div>
 
             <div className="space-y-3">
-              <Label className={darkMode ? 'text-gray-200' : ''}>Status</Label>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="alive-filter"
-                    checked={searchFilters.isAlive === true}
-                    onCheckedChange={(checked) => 
-                      setSearchFilters({ isAlive: checked ? true : undefined })
-                    }
-                  />
-                  <Label htmlFor="alive-filter" className={`text-sm ${darkMode ? 'text-gray-300' : ''}`}>Living only</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="deceased-filter"
-                    checked={searchFilters.isAlive === false}
-                    onCheckedChange={(checked) => 
-                      setSearchFilters({ isAlive: checked ? false : undefined })
-                    }
-                  />
-                  <Label htmlFor="deceased-filter" className={`text-sm ${darkMode ? 'text-gray-300' : ''}`}>Deceased only</Label>
-                </div>
+              <div>
+                <Label className={`text-sm ${darkMode ? 'text-gray-300' : ''}`}>Gender</Label>
+                <Select
+                  value={searchFilters.gender || ''}
+                  onValueChange={(value) => updateFilters({ gender: value || undefined })}
+                >
+                  <SelectTrigger className={`mt-1 ${darkMode ? 'border-gray-600 bg-gray-700 text-gray-200' : ''}`}>
+                    <SelectValue placeholder="All genders" />
+                  </SelectTrigger>
+                  <SelectContent className={darkMode ? 'bg-gray-800 border-gray-600' : ''}>
+                    <SelectItem value="">All genders</SelectItem>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="photo-filter"
+              <div>
+                <Label className={`text-sm ${darkMode ? 'text-gray-300' : ''}`}>Status</Label>
+                <Select
+                  value={searchFilters.isAlive === undefined ? '' : searchFilters.isAlive.toString()}
+                  onValueChange={(value) => 
+                    updateFilters({ 
+                      isAlive: value === '' ? undefined : value === 'true'
+                    })
+                  }
+                >
+                  <SelectTrigger className={`mt-1 ${darkMode ? 'border-gray-600 bg-gray-700 text-gray-200' : ''}`}>
+                    <SelectValue placeholder="All members" />
+                  </SelectTrigger>
+                  <SelectContent className={darkMode ? 'bg-gray-800 border-gray-600' : ''}>
+                    <SelectItem value="">All members</SelectItem>
+                    <SelectItem value="true">Living</SelectItem>
+                    <SelectItem value="false">Deceased</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Label className={`text-sm ${darkMode ? 'text-gray-300' : ''}`}>Has Profile Picture</Label>
+                <Switch
                   checked={searchFilters.hasImage === true}
                   onCheckedChange={(checked) => 
-                    setSearchFilters({ hasImage: checked ? true : undefined })
+                    updateFilters({ 
+                      hasImage: checked ? true : undefined
+                    })
                   }
                 />
-                <Label htmlFor="photo-filter" className={`text-sm ${darkMode ? 'text-gray-300' : ''}`}>Has photo only</Label>
               </div>
             </div>
           </div>
-        </SheetContent>
-      </Sheet>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 };
