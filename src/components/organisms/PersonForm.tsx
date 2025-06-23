@@ -118,7 +118,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
               </FormField>
 
               <ImageUpload
-                value={formData.image || ''}
+                value={formData.image}
                 onChange={(value) => updateField('image', value)}
               />
 
@@ -126,7 +126,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
                 <FormField label="Gender">
                   <Select
                     value={formData.gender}
-                    onValueChange={(value) => updateField('gender', value)}
+                    onValueChange={(value) => updateField('gender', value as any)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select gender" />
@@ -144,7 +144,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
                 <FormField label="Marital Status">
                   <Select
                     value={formData.maritalStatus || ''}
-                    onValueChange={(value) => updateField('maritalStatus', value || undefined)}
+                    onValueChange={(value) => updateField('maritalStatus', value as any)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select status" />

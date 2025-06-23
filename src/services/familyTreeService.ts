@@ -1,9 +1,8 @@
-
 /**
  * Family tree business logic service
  */
 
-import { Person, Relationship, RelationshipType, Gender } from '../types';
+import { Person, Relationship, RelationshipType, Gender, MaritalStatus } from '../types';
 import { generateId } from '../utils';
 
 export class FamilyTreeService {
@@ -13,20 +12,20 @@ export class FamilyTreeService {
   static createPerson(data: Omit<Person, 'id'>): Person {
     return {
       id: generateId(),
-      name: (data.name as string) || '',
+      name: String(data.name || ''),
       gender: (data.gender as Gender) || 'male',
-      isAlive: (data.isAlive as boolean) !== undefined ? (data.isAlive as boolean) : true,
-      nickname: (data.nickname as string) || '',
-      birthDate: (data.birthDate as string) || '',
-      deathDate: (data.deathDate as string) || '',
-      birthPlace: (data.birthPlace as string) || '',
-      occupation: (data.occupation as string) || '',
-      maritalStatus: data.maritalStatus || undefined,
-      image: (data.image as string) || '',
-      phone: (data.phone as string) || '',
-      email: (data.email as string) || '',
-      website: (data.website as string) || '',
-      biography: (data.biography as string) || '',
+      isAlive: Boolean(data.isAlive !== undefined ? data.isAlive : true),
+      nickname: String(data.nickname || ''),
+      birthDate: String(data.birthDate || ''),
+      deathDate: String(data.deathDate || ''),
+      birthPlace: String(data.birthPlace || ''),
+      occupation: String(data.occupation || ''),
+      maritalStatus: (data.maritalStatus as MaritalStatus) || undefined,
+      image: String(data.image || ''),
+      phone: String(data.phone || ''),
+      email: String(data.email || ''),
+      website: String(data.website || ''),
+      biography: String(data.biography || ''),
     };
   }
 
