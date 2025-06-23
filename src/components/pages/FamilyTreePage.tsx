@@ -39,12 +39,15 @@ export const FamilyTreePage: React.FC = () => {
       try {
         const decodedData = decodeURIComponent(sharedData);
         const parsedData = JSON.parse(decodedData);
-        importData(parsedData.people, parsedData.relationships);
-        
-        toast({
-          title: "Loaded Shared Tree",
-          description: SUCCESS_MESSAGES.DATA_IMPORTED,
-        });
+        // Fix: importData expects two separate arrays, not a file
+        if (parsedData.people && parsedData.relationships) {
+          importData(parsedData.people, parsedData.relationships);
+          
+          toast({
+            title: "Loaded Shared Tree",
+            description: SUCCESS_MESSAGES.DATA_IMPORTED,
+          });
+        }
         
         cleanUrl();
       } catch (error) {

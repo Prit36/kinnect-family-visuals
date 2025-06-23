@@ -1,4 +1,3 @@
-
 /**
  * Family tree business logic service
  */
@@ -16,17 +15,17 @@ export class FamilyTreeService {
       name: data.name || '',
       gender: data.gender || 'male',
       isAlive: data.isAlive !== undefined ? data.isAlive : true,
-      nickname: data.nickname,
-      birthDate: data.birthDate,
-      deathDate: data.deathDate,
-      birthPlace: data.birthPlace,
-      occupation: data.occupation,
-      maritalStatus: data.maritalStatus,
-      image: data.image,
-      phone: data.phone,
-      email: data.email,
-      website: data.website,
-      biography: data.biography,
+      nickname: data.nickname || '',
+      birthDate: data.birthDate || '',
+      deathDate: data.deathDate || '',
+      birthPlace: data.birthPlace || '',
+      occupation: data.occupation || '',
+      maritalStatus: data.maritalStatus || undefined,
+      image: data.image || '',
+      phone: data.phone || '',
+      email: data.email || '',
+      website: data.website || '',
+      biography: data.biography || '',
     };
   }
 
@@ -65,28 +64,33 @@ export class FamilyTreeService {
    * Get family statistics
    */
   static getFamilyStatistics(people: Person[]) {
-    const totalMembers = people.length;
-    const livingMembers = people.filter((p) => p.isAlive).length;
-    const deceasedMembers = totalMembers - livingMembers;
+    const total = people.length;
+    const living = people.filter((p) => p.isAlive).length;
+    const deceased = total - living;
+    const male = people.filter((p) => p.gender === 'male').length;
+    const female = people.filter((p) => p.gender === 'female').length;
     
-    const genderStats = people.reduce(
-      (acc, person) => {
-        acc[person.gender] = (acc[person.gender] || 0) + 1;
-        return acc;
-      },
-      {} as Record<Gender, number>
-    );
-
-    const generationStats = this.calculateGenerations(people);
+    const occupations = new Set(people.filter(p => p.occupation).map(p => p.occupation)).size;
     const averageAge = this.calculateAverageAge(people);
 
     return {
-      totalMembers,
-      livingMembers,
-      deceasedMembers,
-      genderStats,
-      generationStats,
+      total,
+      living,
+      deceased,
+      male,
+      female,
+      occupations,
       averageAge,
+      // Keep the old structure for backward compatibility
+      totalMembers: total,
+      livingMembers: living,
+      deceasedMembers: deceased,
+      genderStats: {
+        male,
+        female,
+        other: people.filter((p) => p.gender === 'other').length,
+      } as Record<Gender, number>,
+      generationStats: this.calculateGenerations(people),
     };
   }
 
@@ -96,24 +100,24 @@ export class FamilyTreeService {
   private static calculateGenerations(people: Person[]) {
     // This is a simplified calculation
     // In a real implementation, you'd traverse the family tree
+    const birthYears = people
+      .filter(p => p.birthDate)
+      .map(p => new Date(p.birthDate!).getFullYear());
+
     return {
       totalGenerations: Math.max(1, Math.ceil(people.length / 3)),
-      oldestGeneration: people.filter((p) => p.birthDate).length > 0 
-        ? Math.min(...people.filter(p => p.birthDate).map(p => new Date(p.birthDate!).getFullYear()))
-        : null,
-      newestGeneration: people.filter((p) => p.birthDate).length > 0
-        ? Math.max(...people.filter(p => p.birthDate).map(p => new Date(p.birthDate!).getFullYear()))
-        : null,
+      oldestGeneration: birthYears.length > 0 ? Math.min(...birthYears) : null,
+      newestGeneration: birthYears.length > 0 ? Math.max(...birthYears) : null,
     };
   }
 
   /**
    * Calculate average age
    */
-  private static calculateAverageAge(people: Person[]): number | null {
+  private static calculateAverageAge(people: Person[]): number {
     const peopleWithBirthDates = people.filter((p) => p.birthDate);
     
-    if (peopleWithBirthDates.length === 0) return null;
+    if (peopleWithBirthDates.length === 0) return 0;
 
     const totalAge = peopleWithBirthDates.reduce((sum, person) => {
       const birthYear = new Date(person.birthDate!).getFullYear();

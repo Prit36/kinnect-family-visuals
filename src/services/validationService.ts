@@ -107,6 +107,26 @@ export class ValidationService {
   }
 
   /**
+   * Validate file upload (alias for validateImageFile)
+   */
+  static validateFileUpload(file: File): ValidationResult {
+    return this.validateImageFile(file);
+  }
+
+  /**
+   * Validate image URL
+   */
+  static async validateImageUrl(url: string): Promise<boolean> {
+    try {
+      const response = await fetch(url, { method: 'HEAD' });
+      const contentType = response.headers.get('content-type');
+      return contentType ? contentType.startsWith('image/') : false;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Validate import data structure
    */
   static validateImportData(data: any): ValidationResult {

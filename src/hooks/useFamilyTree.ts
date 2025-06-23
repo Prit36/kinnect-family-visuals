@@ -1,3 +1,4 @@
+
 /**
  * Main hook for family tree operations
  */
@@ -115,10 +116,9 @@ export const useFamilyTree = () => {
     }
   }, [familyTreeStore, toast]);
 
-  const importData = useCallback(async (file: File) => {
+  const importData = useCallback((people: Person[], relationships: Relationship[]) => {
     try {
-      const data = await ExportService.importFromJSON(file);
-      familyTreeStore.importData(data.people, data.relationships);
+      familyTreeStore.importData(people, relationships);
       
       toast({
         title: SUCCESS_MESSAGES.DATA_IMPORTED,

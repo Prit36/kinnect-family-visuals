@@ -75,6 +75,13 @@ export const getStatusColor = (isAlive: boolean): string => {
 };
 
 /**
+ * Get status ring color based on person
+ */
+export const getStatusRingColor = (person: Person): string => {
+  return person.isAlive ? 'ring-green-400' : 'ring-gray-400';
+};
+
+/**
  * Get gender color for charts
  */
 export const getGenderColor = (gender: Gender): string => {
@@ -117,10 +124,37 @@ export const isValidUrl = (url: string): boolean => {
 };
 
 /**
+ * Create export data structure
+ */
+export const createExportData = (people: Person[], relationships: any[]): ExportData => {
+  return {
+    people,
+    relationships,
+    metadata: {
+      version: '1.0.0',
+      exportDate: new Date().toISOString(),
+      totalMembers: people.length,
+    },
+  };
+};
+
+/**
+ * Validate import data structure
+ */
+export const validateImportData = (data: any): boolean => {
+  return (
+    data &&
+    typeof data === 'object' &&
+    Array.isArray(data.people) &&
+    Array.isArray(data.relationships)
+  );
+};
+
+/**
  * Create shareable URL with data
  */
-export const createShareableUrl = (data: ExportData): string => {
-  const encodedData = encodeURIComponent(JSON.stringify(data));
+export const createShareableUrl = (data: string): string => {
+  const encodedData = encodeURIComponent(data);
   return `${window.location.origin}${window.location.pathname}?data=${encodedData}`;
 };
 
