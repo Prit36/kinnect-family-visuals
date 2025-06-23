@@ -32,7 +32,7 @@ import { FormField } from '../molecules/FormField';
 import { ImageUpload } from '../molecules/ImageUpload';
 import { usePersonForm } from '../../hooks/usePersonForm';
 import { useFamilyTree } from '../../hooks/useFamilyTree';
-import type { PersonFormData, RelationshipType } from '../../types';
+import type { PersonFormData, RelationshipType, Gender, MaritalStatus } from '../../types';
 import { GENDER_OPTIONS, MARITAL_STATUS_OPTIONS, RELATIONSHIP_TYPE_OPTIONS } from '../../constants';
 
 interface PersonFormProps {
@@ -126,7 +126,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
                 <FormField label="Gender">
                   <Select
                     value={formData.gender}
-                    onValueChange={(value) => updateField('gender', value as any)}
+                    onValueChange={(value) => updateField('gender', value as Gender)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select gender" />
@@ -144,7 +144,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
                 <FormField label="Marital Status">
                   <Select
                     value={formData.maritalStatus || ''}
-                    onValueChange={(value) => updateField('maritalStatus', value as any)}
+                    onValueChange={(value) => updateField('maritalStatus', value as MaritalStatus)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select status" />

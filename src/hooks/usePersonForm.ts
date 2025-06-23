@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { PersonFormData, RelationshipType } from '../types';
+import { PersonFormData, RelationshipType, Gender, MaritalStatus } from '../types';
 import { ValidationService } from '../services/validationService';
 import { GENDER_OPTIONS, MARITAL_STATUS_OPTIONS } from '../constants';
 
@@ -18,12 +18,12 @@ export const usePersonForm = ({ initialData, onSubmit, onCancel }: UsePersonForm
   const [formData, setFormData] = useState<PersonFormData>({
     name: initialData?.name || '',
     nickname: initialData?.nickname || '',
-    gender: initialData?.gender || 'male',
+    gender: (initialData?.gender as Gender) || 'male',
     birthDate: initialData?.birthDate || '',
     deathDate: initialData?.deathDate || '',
     birthPlace: initialData?.birthPlace || '',
     occupation: initialData?.occupation || '',
-    maritalStatus: initialData?.maritalStatus || undefined,
+    maritalStatus: (initialData?.maritalStatus as MaritalStatus) || undefined,
     isAlive: initialData?.isAlive !== undefined ? initialData.isAlive : true,
     image: initialData?.image || '',
     phone: initialData?.phone || '',
@@ -31,7 +31,7 @@ export const usePersonForm = ({ initialData, onSubmit, onCancel }: UsePersonForm
     website: initialData?.website || '',
     biography: initialData?.biography || '',
     selectedPerson: initialData?.selectedPerson || '',
-    relationshipType: initialData?.relationshipType || undefined,
+    relationshipType: (initialData?.relationshipType as RelationshipType) || undefined,
   });
 
   const [errors, setErrors] = useState<string[]>([]);
@@ -92,7 +92,7 @@ export const usePersonForm = ({ initialData, onSubmit, onCancel }: UsePersonForm
     setFormData({
       name: '',
       nickname: '',
-      gender: 'male',
+      gender: 'male' as Gender,
       birthDate: '',
       deathDate: '',
       birthPlace: '',
@@ -116,12 +116,12 @@ export const usePersonForm = ({ initialData, onSubmit, onCancel }: UsePersonForm
     setFormData({
       name: initialData?.name || '',
       nickname: initialData?.nickname || '',
-      gender: initialData?.gender || 'male',
+      gender: (initialData?.gender as Gender) || 'male',
       birthDate: initialData?.birthDate || '',
       deathDate: initialData?.deathDate || '',
       birthPlace: initialData?.birthPlace || '',
       occupation: initialData?.occupation || '',
-      maritalStatus: initialData?.maritalStatus || undefined,
+      maritalStatus: (initialData?.maritalStatus as MaritalStatus) || undefined,
       isAlive: initialData?.isAlive !== undefined ? initialData.isAlive : true,
       image: initialData?.image || '',
       phone: initialData?.phone || '',
@@ -129,7 +129,7 @@ export const usePersonForm = ({ initialData, onSubmit, onCancel }: UsePersonForm
       website: initialData?.website || '',
       biography: initialData?.biography || '',
       selectedPerson: initialData?.selectedPerson || '',
-      relationshipType: initialData?.relationshipType || undefined,
+      relationshipType: (initialData?.relationshipType as RelationshipType) || undefined,
     });
     setErrors([]);
     setImagePreview(initialData?.image || '');
