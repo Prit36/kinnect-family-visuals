@@ -1,4 +1,3 @@
-
 /**
  * Hook for managing person form state and validation
  */
@@ -38,7 +37,10 @@ export const usePersonForm = ({ initialData, onSubmit, onCancel }: UsePersonForm
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState(initialData?.image || '');
 
-  const updateField = useCallback(<K extends keyof PersonFormData>(field: K, value: PersonFormData[K]) => {
+  const updateField = useCallback(<K extends keyof PersonFormData>(
+    field: K, 
+    value: PersonFormData[K]
+  ) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
     // Clear errors when user starts typing
