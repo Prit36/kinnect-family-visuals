@@ -1,3 +1,4 @@
+
 /**
  * Person form component for adding/editing family members
  */
@@ -31,7 +32,7 @@ import { FormField } from '../molecules/FormField';
 import { ImageUpload } from '../molecules/ImageUpload';
 import { usePersonForm } from '../../hooks/usePersonForm';
 import { useFamilyTree } from '../../hooks/useFamilyTree';
-import { PersonFormData, RelationshipType } from '../../types';
+import type { PersonFormData, RelationshipType } from '../../types';
 import { GENDER_OPTIONS, MARITAL_STATUS_OPTIONS, RELATIONSHIP_TYPE_OPTIONS } from '../../constants';
 
 interface PersonFormProps {
@@ -131,7 +132,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                     <SelectContent>
-                      {genderOptions.map((option) => (
+                      {GENDER_OPTIONS.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
                         </SelectItem>
@@ -149,7 +150,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
-                      {maritalStatusOptions.map((option) => (
+                      {MARITAL_STATUS_OPTIONS.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
                         </SelectItem>

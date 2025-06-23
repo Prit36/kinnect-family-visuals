@@ -1,8 +1,9 @@
+
 /**
  * Application constants and configuration
  */
 
-import { Gender, MaritalStatus, RelationshipType, LayoutType } from '../types';
+import type { Gender, MaritalStatus, RelationshipType, LayoutType } from '../types';
 
 // Layout Constants
 export const LAYOUT_CONFIG = {
@@ -47,49 +48,45 @@ export const FORM_VALIDATION = {
   }
 } as const;
 
-// Options for dropdowns
+// Options for dropdowns - Single source of truth for display values
 export const GENDER_OPTIONS = [
-  { value: Gender.MALE, label: 'Male' },
-  { value: Gender.FEMALE, label: 'Female' },
-  { value: Gender.OTHER, label: 'Other' }
+  { value: 'male' as const, label: 'Male' },
+  { value: 'female' as const, label: 'Female' },
+  { value: 'other' as const, label: 'Other' }
 ] as const;
 
 export const MARITAL_STATUS_OPTIONS = [
-  { value: MaritalStatus.SINGLE, label: 'Single' },
-  { value: MaritalStatus.MARRIED, label: 'Married' },
-  { value: MaritalStatus.DIVORCED, label: 'Divorced' },
-  { value: MaritalStatus.WIDOWED, label: 'Widowed' }
+  { value: 'single' as const, label: 'Single' },
+  { value: 'married' as const, label: 'Married' },
+  { value: 'divorced' as const, label: 'Divorced' },
+  { value: 'widowed' as const, label: 'Widowed' }
 ] as const;
 
 export const RELATIONSHIP_TYPE_OPTIONS = [
-  { value: RelationshipType.PARENT, label: 'Parent' },
-  { value: RelationshipType.SPOUSE, label: 'Spouse' },
-  { value: RelationshipType.CHILD, label: 'Child' }
+  { value: 'parent' as const, label: 'Parent' },
+  { value: 'spouse' as const, label: 'Spouse' },
+  { value: 'child' as const, label: 'Child' }
 ] as const;
 
 export const LAYOUT_OPTIONS = [
-  { value: LayoutType.HIERARCHICAL, label: 'Hierarchical' },
-  { value: LayoutType.CIRCULAR, label: 'Circular' },
-  { value: LayoutType.GRID, label: 'Grid' },
-  { value: LayoutType.RADIAL, label: 'Radial' }
+  { value: 'hierarchical' as const, label: 'Hierarchical' },
+  { value: 'circular' as const, label: 'Circular' },
+  { value: 'grid' as const, label: 'Grid' },
+  { value: 'radial' as const, label: 'Radial' }
 ] as const;
 
 // Theme Constants
 export const THEME_CONFIG = {
   COLORS: {
     GENDER: {
-      [Gender.MALE]: '#3b82f6',
-      [Gender.FEMALE]: '#ec4899',
-      [Gender.OTHER]: '#8b5cf6'
-    },
+      male: '#3b82f6',
+      female: '#ec4899',
+      other: '#8b5cf6'
+    } as Record<Gender, string>,
     STATUS: {
       LIVING: '#10b981',
       DECEASED: '#6b7280'
     }
-  },
-  GRADIENTS: {
-    PRIMARY: 'from-blue-500 to-purple-600',
-    SECONDARY: 'from-green-400 to-blue-500'
   }
 } as const;
 

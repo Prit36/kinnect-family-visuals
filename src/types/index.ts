@@ -1,6 +1,14 @@
+
 /**
  * Core type definitions for the Family Tree application
  */
+
+// Base types - Single source of truth
+export type Gender = 'male' | 'female' | 'other';
+export type MaritalStatus = 'single' | 'married' | 'divorced' | 'widowed';
+export type RelationshipType = 'parent' | 'spouse' | 'child';
+export type LayoutType = 'hierarchical' | 'circular' | 'grid' | 'radial';
+export type NodeViewMode = 'normal' | 'fullImage';
 
 export interface Person {
   id: string;
@@ -63,38 +71,6 @@ export interface ExportData {
     exportDate: string;
     totalMembers: number;
   };
-}
-
-// Enums
-export enum Gender {
-  MALE = 'male',
-  FEMALE = 'female',
-  OTHER = 'other'
-}
-
-export enum MaritalStatus {
-  SINGLE = 'single',
-  MARRIED = 'married',
-  DIVORCED = 'divorced',
-  WIDOWED = 'widowed'
-}
-
-export enum RelationshipType {
-  PARENT = 'parent',
-  SPOUSE = 'spouse',
-  CHILD = 'child'
-}
-
-export enum LayoutType {
-  HIERARCHICAL = 'hierarchical',
-  CIRCULAR = 'circular',
-  GRID = 'grid',
-  RADIAL = 'radial'
-}
-
-export enum NodeViewMode {
-  NORMAL = 'normal',
-  FULL_IMAGE = 'fullImage'
 }
 
 // UI State Types

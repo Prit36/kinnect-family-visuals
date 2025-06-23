@@ -1,11 +1,11 @@
+
 /**
  * Search and filter state store using Zustand
  */
 
 import { create } from 'zustand';
-import { SearchFilters, Person, Gender } from '../types';
+import type { SearchFilters, Person, Gender } from '../types';
 import { FamilyTreeService } from '../services/familyTreeService';
-import { useDebounce } from '../hooks/useDebounce';
 
 interface SearchState extends SearchFilters {
   // Derived state

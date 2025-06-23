@@ -1,10 +1,10 @@
+
 /**
  * UI state store using Zustand
  */
 
 import { create } from 'zustand';
-import { LayoutType, NodeViewMode } from '../types';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import type { LayoutType, NodeViewMode } from '../types';
 import { STORAGE_KEYS } from '../constants';
 
 interface UIState {
@@ -42,8 +42,8 @@ interface UIState {
 export const useUIStore = create<UIState>((set, get) => ({
   // Initial state
   selectedNodeId: null,
-  nodeViewMode: NodeViewMode.NORMAL,
-  currentLayout: LayoutType.HIERARCHICAL,
+  nodeViewMode: 'normal',
+  currentLayout: 'hierarchical',
   showStatistics: false,
   isFullscreen: false,
   isAddPersonModalOpen: false,
@@ -97,14 +97,17 @@ export const useUIStore = create<UIState>((set, get) => ({
 
 // Initialize from localStorage
 const initializeUIStore = () => {
-  const savedViewMode = localStorage.getItem(STORAGE_KEYS.VIEW_MODE) as NodeViewMode;
-  const savedLayout = localStorage.getItem(STORAGE_KEYS.LAYOUT_PREFERENCE) as LayoutType;
+  const savedViewMode = localStorage.getItem(STORAGE_KEYS.VIEW_MODE) as NodeViewMode | null;
+  const savedLayout = localStorage.getItem(STORAGE_KEYS.LAYOUT_PREFERENCE) as LayoutType | null;
   
-  if (savedViewMode && Object.values(NodeViewMode).includes(savedViewMode)) {
+  const validViewModes: NodeViewMode[] = ['normal', 'fullImage'];
+  const validLayouts: LayoutType[] = ['hierarchical', 'circular', 'grid', 'radial'];
+  
+  if (savedViewMode && validViewModes.includes(savedViewMode)) {
     useUIStore.getState().setNodeViewMode(savedViewMode);
   }
   
-  if (savedLayout && Object.values(LayoutType).includes(savedLayout)) {
+  if (savedLayout && validLayouts.includes(savedLayout)) {
     useUIStore.getState().setCurrentLayout(savedLayout);
   }
 };
