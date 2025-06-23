@@ -1,67 +1,51 @@
+
 /**
- * Layout calculation service for family tree visualization
+ * Layout service for different family tree layouts
  */
 
 import dagre from 'dagre';
-import { Node, Edge, Position } from '@xyflow/react';
-import { LayoutType } from '../types';
-import { LAYOUT_CONFIG } from '../constants';
+import { FamilyTreeNode, FamilyTreeEdge, LayoutType } from '../types';
 
 export class LayoutService {
-  private static dagreGraph = new dagre.graphlib.Graph();
-
-  static {
-    this.dagreGraph.setDefaultEdgeLabel(() => ({}));
-  }
+  private static readonly NODE_WIDTH = 300;
+  private static readonly NODE_HEIGHT = 200;
+  private static readonly LAYOUT_SPACING = 100;
 
   /**
    * Apply hierarchical layout using Dagre
    */
-  static applyHierarchicalLayout(
-    nodes: Node[],
-    edges: Edge[],
-    direction: 'TB' | 'LR' = 'TB'
-  ): { nodes: Node[]; edges: Edge[] } {
-    this.dagreGraph.setGraph({ rankdir: direction });
+  private static applyHierarchicalLayout(
+    nodes: FamilyTreeNode[],
+    edges: FamilyTreeEdge[]
+  ): { nodes: FamilyTreeNode[]; edges: FamilyTreeEdge[] } {
+    const g = new dagre.graphlib.Graph();
+    g.setGraph({ rankdir: 'TB', nodesep: 100, ranksep: 150 });
+    g.setDefaultEdgeLabel(() => ({}));
 
-    // Clear previous graph
-    nodes.forEach(node => {
-      if (this.dagreGraph.hasNode(node.id)) {
-        this.dagreGraph.removeNode(node.id);
-      }
-    });
-
-    edges.forEach(edge => {
-      if (this.dagreGraph.hasEdge(edge.source, edge.target)) {
-        this.dagreGraph.removeEdge(edge.source, edge.target);
-      }
-    });
-
-    // Add nodes and edges
-    nodes.forEach(node => {
-      this.dagreGraph.setNode(node.id, {
-        width: LAYOUT_CONFIG.NODE_WIDTH,
-        height: LAYOUT_CONFIG.NODE_HEIGHT
+    // Add nodes to graph
+    nodes.forEach((node) => {
+      g.setNode(node.id, {
+        width: this.NODE_WIDTH,
+        height: this.NODE_HEIGHT,
       });
     });
 
-    edges.forEach(edge => {
-      this.dagreGraph.setEdge(edge.source, edge.target);
+    // Add edges to graph
+    edges.forEach((edge) => {
+      g.setEdge(edge.source, edge.target);
     });
 
-    dagre.layout(this.dagreGraph);
+    // Apply layout
+    dagre.layout(g);
 
     // Update node positions
-    const layoutedNodes = nodes.map(node => {
-      const nodeWithPosition = this.dagreGraph.node(node.id);
-      
+    const layoutedNodes = nodes.map((node) => {
+      const nodeWithPosition = g.node(node.id);
       return {
         ...node,
-        targetPosition: direction === 'LR' ? Position.Left : Position.Top,
-        sourcePosition: direction === 'LR' ? Position.Right : Position.Bottom,
         position: {
-          x: nodeWithPosition.x - LAYOUT_CONFIG.NODE_WIDTH / 2,
-          y: nodeWithPosition.y - LAYOUT_CONFIG.NODE_HEIGHT / 2,
+          x: nodeWithPosition.x - this.NODE_WIDTH / 2,
+          y: nodeWithPosition.y - this.NODE_HEIGHT / 2,
         },
       };
     });
@@ -72,7 +56,10 @@ export class LayoutService {
   /**
    * Apply circular layout
    */
-  static applyCircularLayout(nodes: Node[], edges: Edge[]): { nodes: Node[]; edges: Edge[] } {
+  private static applyCircularLayout(
+    nodes: FamilyTreeNode[],
+    edges: FamilyTreeEdge[]
+  ): { nodes: FamilyTreeNode[]; edges: FamilyTreeEdge[] } {
     const centerX = 400;
     const centerY = 300;
     const radius = Math.max(200, nodes.length * 30);
@@ -84,7 +71,7 @@ export class LayoutService {
 
       return {
         ...node,
-        position: { x, y },
+        position: { x: x - this.NODE_WIDTH / 2, y: y - this.NODE_HEIGHT / 2 },
       };
     });
 
@@ -94,19 +81,22 @@ export class LayoutService {
   /**
    * Apply grid layout
    */
-  static applyGridLayout(nodes: Node[], edges: Edge[]): { nodes: Node[]; edges: Edge[] } {
+  private static applyGridLayout(
+    nodes: FamilyTreeNode[],
+    edges: FamilyTreeEdge[]
+  ): { nodes: FamilyTreeNode[]; edges: FamilyTreeEdge[] } {
     const cols = Math.ceil(Math.sqrt(nodes.length));
-    const spacing = LAYOUT_CONFIG.NODE_WIDTH + LAYOUT_CONFIG.SPACING.HORIZONTAL;
+    const spacing = this.NODE_WIDTH + this.LAYOUT_SPACING;
 
     const layoutedNodes = nodes.map((node, index) => {
       const row = Math.floor(index / cols);
       const col = index % cols;
-      
+
       return {
         ...node,
         position: {
           x: col * spacing,
-          y: row * (LAYOUT_CONFIG.NODE_HEIGHT + LAYOUT_CONFIG.SPACING.VERTICAL),
+          y: row * (this.NODE_HEIGHT + this.LAYOUT_SPACING),
         },
       };
     });
@@ -117,46 +107,39 @@ export class LayoutService {
   /**
    * Apply radial layout
    */
-  static applyRadialLayout(nodes: Node[], edges: Edge[]): { nodes: Node[]; edges: Edge[] } {
+  private static applyRadialLayout(
+    nodes: FamilyTreeNode[],
+    edges: FamilyTreeEdge[]
+  ): { nodes: FamilyTreeNode[]; edges: FamilyTreeEdge[] } {
     if (nodes.length === 0) return { nodes, edges };
 
+    // Place the first node at center
     const centerNode = nodes[0];
-    const otherNodes = nodes.slice(1);
-    
     const centerX = 400;
     const centerY = 300;
-    
-    // Place center node
-    const layoutedNodes = [
-      {
-        ...centerNode,
-        position: { x: centerX, y: centerY },
+
+    const layoutedNodes = nodes.map((node, index) => {
+      if (index === 0) {
+        return {
+          ...node,
+          position: { x: centerX - this.NODE_WIDTH / 2, y: centerY - this.NODE_HEIGHT / 2 },
+        };
       }
-    ];
 
-    // Place other nodes in concentric circles
-    const levels = Math.ceil(otherNodes.length / 8);
-    let nodeIndex = 0;
-
-    for (let level = 1; level <= levels; level++) {
+      // Calculate position for other nodes in concentric circles
+      const level = Math.floor((index - 1) / 6) + 1;
+      const positionInLevel = (index - 1) % 6;
       const radius = level * 200;
-      const nodesInLevel = Math.min(8 * level, otherNodes.length - nodeIndex);
-      
-      for (let i = 0; i < nodesInLevel; i++) {
-        if (nodeIndex >= otherNodes.length) break;
-        
-        const angle = (2 * Math.PI * i) / nodesInLevel;
-        const x = centerX + radius * Math.cos(angle);
-        const y = centerY + radius * Math.sin(angle);
-        
-        layoutedNodes.push({
-          ...otherNodes[nodeIndex],
-          position: { x, y },
-        });
-        
-        nodeIndex++;
-      }
-    }
+      const angle = (2 * Math.PI * positionInLevel) / 6;
+
+      const x = centerX + radius * Math.cos(angle);
+      const y = centerY + radius * Math.sin(angle);
+
+      return {
+        ...node,
+        position: { x: x - this.NODE_WIDTH / 2, y: y - this.NODE_HEIGHT / 2 },
+      };
+    });
 
     return { nodes: layoutedNodes, edges };
   }
@@ -166,20 +149,36 @@ export class LayoutService {
    */
   static applyLayout(
     layoutType: LayoutType,
-    nodes: Node[],
-    edges: Edge[]
-  ): { nodes: Node[]; edges: Edge[] } {
+    nodes: FamilyTreeNode[],
+    edges: FamilyTreeEdge[]
+  ): { nodes: FamilyTreeNode[]; edges: FamilyTreeEdge[] } {
+    if (nodes.length === 0) {
+      return { nodes, edges };
+    }
+
     switch (layoutType) {
-      case LayoutType.HIERARCHICAL:
+      case 'hierarchical':
         return this.applyHierarchicalLayout(nodes, edges);
-      case LayoutType.CIRCULAR:
+      case 'circular':
         return this.applyCircularLayout(nodes, edges);
-      case LayoutType.GRID:
+      case 'grid':
         return this.applyGridLayout(nodes, edges);
-      case LayoutType.RADIAL:
+      case 'radial':
         return this.applyRadialLayout(nodes, edges);
       default:
-        return { nodes, edges };
+        return this.applyHierarchicalLayout(nodes, edges);
     }
+  }
+
+  /**
+   * Get available layout types
+   */
+  static getAvailableLayouts(): Array<{ value: LayoutType; label: string }> {
+    return [
+      { value: 'hierarchical', label: 'Hierarchical' },
+      { value: 'circular', label: 'Circular' },
+      { value: 'grid', label: 'Grid' },
+      { value: 'radial', label: 'Radial' },
+    ];
   }
 }

@@ -1,3 +1,4 @@
+
 /**
  * Main family tree visualization component
  */
@@ -140,10 +141,10 @@ export const FamilyTreeVisualization: React.FC<FamilyTreeVisualizationProps> = (
           style={miniMapStyle}
           className="shadow-xl"
           nodeColor={(node) => {
-            if (node.type === 'person') {
-              const gender = node.data?.gender;
-              if (!node.data?.isAlive) return '#9ca3af';
-              return THEME_CONFIG.COLORS.GENDER[gender] || '#64748b';
+            if (node.type === 'person' && node.data) {
+              const gender = (node.data as any).gender;
+              if (!(node.data as any).isAlive) return '#9ca3af';
+              return THEME_CONFIG.COLORS.GENDER[gender as keyof typeof THEME_CONFIG.COLORS.GENDER] || '#64748b';
             }
             return '#64748b';
           }}

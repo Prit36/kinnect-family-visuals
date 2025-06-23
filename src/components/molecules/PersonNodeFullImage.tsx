@@ -37,6 +37,16 @@ export const PersonNodeFullImage: React.FC<PersonNodeProps> = memo(
       setSelectedNode(selected ? null : id);
     };
 
+    const handleEditClick = () => {
+      // TODO: Implement edit functionality
+      console.log('Edit person:', id);
+    };
+
+    const handleDeleteClick = () => {
+      // TODO: Implement delete functionality
+      console.log('Delete person:', id);
+    };
+
     const handleActionClick = (e: React.MouseEvent) => {
       e.stopPropagation();
     };
@@ -171,13 +181,13 @@ export const PersonNodeFullImage: React.FC<PersonNodeProps> = memo(
                 <div className="flex justify-end p-2 bg-gray-50 dark:bg-gray-800/50 rounded-b-2xl">
                   <IconButton
                     icon={<Edit size={14} />}
-                    onClick={handleActionClick}
+                    onClick={handleEditClick}
                     tooltip="Edit Person"
                     size="sm"
                   />
                   <IconButton
                     icon={<Trash2 size={14} />}
-                    onClick={handleActionClick}
+                    onClick={handleDeleteClick}
                     tooltip="Remove Person"
                     variant="destructive"
                     size="sm"

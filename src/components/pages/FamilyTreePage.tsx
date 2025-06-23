@@ -17,7 +17,6 @@ import { useFamilyTree } from '../../hooks/useFamilyTree';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useToast } from '../../hooks/use-toast';
 import { extractSharedDataFromUrl, cleanUrl } from '../../utils';
-import { ExportService } from '../../services/exportService';
 import { SUCCESS_MESSAGES } from '../../constants';
 
 export const FamilyTreePage: React.FC = () => {

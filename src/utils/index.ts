@@ -1,80 +1,66 @@
+
 /**
  * Utility functions for the Family Tree application
  */
 
+import { format, differenceInYears, parseISO, isValid } from 'date-fns';
 import { Person, Gender, ExportData } from '../types';
-import { FORM_VALIDATION, API_CONFIG } from '../constants';
 
 /**
- * Generate initials from a person's name
+ * Generate a unique ID
  */
-export const getInitials = (name: string): string => {
-  const names = name.trim().split(' ');
-  if (names.length === 1) {
-    return names[0].substring(0, 2).toUpperCase();
-  }
-  return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+export const generateId = (): string => {
+  return Math.random().toString(36).substr(2, 9);
 };
 
 /**
- * Calculate age from birth date and optional death date
+ * Format a person's lifespan
+ */
+export const formatLifespan = (person: Person): string => {
+  const birth = person.birthDate ? new Date(person.birthDate).getFullYear() : '?';
+  
+  if (!person.isAlive && person.deathDate) {
+    const death = new Date(person.deathDate).getFullYear();
+    return `${birth} - ${death}`;
+  }
+  
+  return person.isAlive ? `${birth} - Present` : `${birth} - ?`;
+};
+
+/**
+ * Calculate age from birth and death dates
  */
 export const calculateAge = (birthDate: string, deathDate?: string): number | null => {
   if (!birthDate) return null;
   
-  const birth = new Date(birthDate);
-  const end = deathDate ? new Date(deathDate) : new Date();
+  const birth = parseISO(birthDate);
+  if (!isValid(birth)) return null;
   
-  let age = end.getFullYear() - birth.getFullYear();
-  const monthDiff = end.getMonth() - birth.getMonth();
+  const endDate = deathDate ? parseISO(deathDate) : new Date();
+  if (deathDate && !isValid(endDate)) return null;
   
-  if (monthDiff < 0 || (monthDiff === 0 && end.getDate() < birth.getDate())) {
-    age--;
-  }
-  
-  return age;
+  return differenceInYears(endDate, birth);
 };
 
 /**
- * Format lifespan display string
+ * Get initials from a name
  */
-export const formatLifespan = (person: Person): string => {
-  const birthYear = person.birthDate ? new Date(person.birthDate).getFullYear() : '?';
-  
-  if (!person.isAlive && person.deathDate) {
-    const deathYear = new Date(person.deathDate).getFullYear();
-    return `${birthYear} - ${deathYear}`;
-  }
-  
-  return `Born ${birthYear}`;
+export const getInitials = (name: string): string => {
+  return name
+    .split(' ')
+    .map(part => part.charAt(0).toUpperCase())
+    .join('')
+    .slice(0, 2);
 };
 
 /**
- * Get status ring color based on person's gender and alive status
- */
-export const getStatusRingColor = (person: Person): string => {
-  if (!person.isAlive) return 'border-gray-500';
-  
-  switch (person.gender) {
-    case Gender.MALE:
-      return 'border-blue-500';
-    case Gender.FEMALE:
-      return 'border-pink-500';
-    default:
-      return 'border-purple-500';
-  }
-};
-
-/**
- * Get background color for person avatar
+ * Get avatar background color based on gender
  */
 export const getAvatarBackgroundColor = (person: Person): string => {
-  if (!person.isAlive) return 'bg-gray-500';
-  
   switch (person.gender) {
-    case Gender.MALE:
+    case 'male':
       return 'bg-blue-500';
-    case Gender.FEMALE:
+    case 'female':
       return 'bg-pink-500';
     default:
       return 'bg-purple-500';
@@ -82,130 +68,59 @@ export const getAvatarBackgroundColor = (person: Person): string => {
 };
 
 /**
- * Validate email format
+ * Get status color based on alive status
  */
-export const isValidEmail = (email: string): boolean => {
-  return FORM_VALIDATION.EMAIL.PATTERN.test(email);
+export const getStatusColor = (isAlive: boolean): string => {
+  return isAlive ? 'bg-green-500' : 'bg-gray-500';
 };
 
 /**
- * Validate phone number format
+ * Get gender color for charts
  */
-export const isValidPhone = (phone: string): boolean => {
-  return FORM_VALIDATION.PHONE.PATTERN.test(phone);
+export const getGenderColor = (gender: Gender): string => {
+  switch (gender) {
+    case 'male':
+      return '#3b82f6'; // blue-500
+    case 'female':
+      return '#ec4899'; // pink-500
+    default:
+      return '#8b5cf6'; // purple-500
+  }
+};
+
+/**
+ * Format date for display
+ */
+export const formatDate = (date: string | Date): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return format(dateObj, 'MMM dd, yyyy');
+};
+
+/**
+ * Validate email format
+ */
+export const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 };
 
 /**
  * Validate URL format
  */
 export const isValidUrl = (url: string): boolean => {
-  return FORM_VALIDATION.URL.PATTERN.test(url);
-};
-
-/**
- * Generate unique ID
- */
-export const generateId = (): string => {
-  return crypto.randomUUID();
-};
-
-/**
- * Format date for display
- */
-export const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString();
-};
-
-/**
- * Create export data with metadata
- */
-export const createExportData = (people: Person[], relationships: any[]): ExportData => {
-  return {
-    people,
-    relationships,
-    metadata: {
-      version: API_CONFIG.VERSION,
-      exportDate: new Date().toISOString(),
-      totalMembers: people.length
-    }
-  };
-};
-
-/**
- * Validate import data structure
- */
-export const validateImportData = (data: any): boolean => {
-  return (
-    data &&
-    Array.isArray(data.people) &&
-    Array.isArray(data.relationships) &&
-    data.metadata &&
-    typeof data.metadata.version === 'string'
-  );
-};
-
-/**
- * Debounce function for search input
- */
-export const debounce = <T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): ((...args: Parameters<T>) => void) => {
-  let timeout: NodeJS.Timeout;
-  
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-};
-
-/**
- * Deep clone object
- */
-export const deepClone = <T>(obj: T): T => {
-  return JSON.parse(JSON.stringify(obj));
-};
-
-/**
- * Check if two objects are equal (shallow comparison)
- */
-export const shallowEqual = (obj1: any, obj2: any): boolean => {
-  const keys1 = Object.keys(obj1);
-  const keys2 = Object.keys(obj2);
-  
-  if (keys1.length !== keys2.length) {
+  try {
+    new URL(url);
+    return true;
+  } catch {
     return false;
   }
-  
-  for (const key of keys1) {
-    if (obj1[key] !== obj2[key]) {
-      return false;
-    }
-  }
-  
-  return true;
 };
 
 /**
- * Capitalize first letter of string
+ * Create shareable URL with data
  */
-export const capitalize = (str: string): string => {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-};
-
-/**
- * Truncate text with ellipsis
- */
-export const truncateText = (text: string, maxLength: number): string => {
-  if (text.length <= maxLength) return text;
-  return text.substring(0, maxLength) + '...';
-};
-
-/**
- * Generate shareable URL with encoded data
- */
-export const generateShareableUrl = (data: string): string => {
-  const encodedData = encodeURIComponent(data);
+export const createShareableUrl = (data: ExportData): string => {
+  const encodedData = encodeURIComponent(JSON.stringify(data));
   return `${window.location.origin}${window.location.pathname}?data=${encodedData}`;
 };
 
@@ -222,4 +137,37 @@ export const extractSharedDataFromUrl = (): string | null => {
  */
 export const cleanUrl = (): void => {
   window.history.replaceState({}, document.title, window.location.pathname);
+};
+
+/**
+ * Debounce function
+ */
+export const debounce = <T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): ((...args: Parameters<T>) => void) => {
+  let timeout: NodeJS.Timeout;
+  
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+};
+
+/**
+ * Throttle function
+ */
+export const throttle = <T extends (...args: any[]) => any>(
+  func: T,
+  limit: number
+): ((...args: Parameters<T>) => void) => {
+  let inThrottle: boolean;
+  
+  return (...args: Parameters<T>) => {
+    if (!inThrottle) {
+      func(...args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
 };

@@ -1,3 +1,4 @@
+
 /**
  * Hook for managing person form state and validation
  */
@@ -15,30 +16,29 @@ interface UsePersonFormProps {
 
 export const usePersonForm = ({ initialData, onSubmit, onCancel }: UsePersonFormProps) => {
   const [formData, setFormData] = useState<PersonFormData>({
-    name: '',
-    nickname: '',
-    gender: 'male' as any,
-    birthDate: '',
-    deathDate: '',
-    birthPlace: '',
-    occupation: '',
-    maritalStatus: undefined,
-    isAlive: true,
-    image: '',
-    phone: '',
-    email: '',
-    website: '',
-    biography: '',
-    selectedPerson: '',
-    relationshipType: undefined,
-    ...initialData,
+    name: initialData?.name || '',
+    nickname: initialData?.nickname || '',
+    gender: initialData?.gender || 'male',
+    birthDate: initialData?.birthDate || '',
+    deathDate: initialData?.deathDate || '',
+    birthPlace: initialData?.birthPlace || '',
+    occupation: initialData?.occupation || '',
+    maritalStatus: initialData?.maritalStatus || undefined,
+    isAlive: initialData?.isAlive !== undefined ? initialData.isAlive : true,
+    image: initialData?.image || '',
+    phone: initialData?.phone || '',
+    email: initialData?.email || '',
+    website: initialData?.website || '',
+    biography: initialData?.biography || '',
+    selectedPerson: initialData?.selectedPerson || '',
+    relationshipType: initialData?.relationshipType || undefined,
   });
 
   const [errors, setErrors] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState(initialData?.image || '');
 
-  const updateField = useCallback((field: keyof PersonFormData, value: any) => {
+  const updateField = useCallback(<K extends keyof PersonFormData>(field: K, value: PersonFormData[K]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
     // Clear errors when user starts typing
@@ -92,7 +92,7 @@ export const usePersonForm = ({ initialData, onSubmit, onCancel }: UsePersonForm
     setFormData({
       name: '',
       nickname: '',
-      gender: 'male' as any,
+      gender: 'male',
       birthDate: '',
       deathDate: '',
       birthPlace: '',
@@ -114,23 +114,22 @@ export const usePersonForm = ({ initialData, onSubmit, onCancel }: UsePersonForm
 
   const resetForm = useCallback(() => {
     setFormData({
-      name: '',
-      nickname: '',
-      gender: 'male' as any,
-      birthDate: '',
-      deathDate: '',
-      birthPlace: '',
-      occupation: '',
-      maritalStatus: undefined,
-      isAlive: true,
-      image: '',
-      phone: '',
-      email: '',
-      website: '',
-      biography: '',
-      selectedPerson: '',
-      relationshipType: undefined,
-      ...initialData,
+      name: initialData?.name || '',
+      nickname: initialData?.nickname || '',
+      gender: initialData?.gender || 'male',
+      birthDate: initialData?.birthDate || '',
+      deathDate: initialData?.deathDate || '',
+      birthPlace: initialData?.birthPlace || '',
+      occupation: initialData?.occupation || '',
+      maritalStatus: initialData?.maritalStatus || undefined,
+      isAlive: initialData?.isAlive !== undefined ? initialData.isAlive : true,
+      image: initialData?.image || '',
+      phone: initialData?.phone || '',
+      email: initialData?.email || '',
+      website: initialData?.website || '',
+      biography: initialData?.biography || '',
+      selectedPerson: initialData?.selectedPerson || '',
+      relationshipType: initialData?.relationshipType || undefined,
     });
     setErrors([]);
     setImagePreview(initialData?.image || '');

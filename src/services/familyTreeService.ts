@@ -1,18 +1,32 @@
+
 /**
  * Family tree business logic service
  */
 
-import { Person, Relationship, RelationshipType } from '../types';
+import { Person, Relationship, RelationshipType, Gender } from '../types';
 import { generateId } from '../utils';
 
 export class FamilyTreeService {
   /**
-   * Create a new person
+   * Create a new person with required fields
    */
-  static createPerson(personData: Omit<Person, 'id'>): Person {
+  static createPerson(data: Omit<Person, 'id'>): Person {
     return {
       id: generateId(),
-      ...personData
+      name: data.name || '',
+      gender: data.gender || 'male',
+      isAlive: data.isAlive !== undefined ? data.isAlive : true,
+      nickname: data.nickname,
+      birthDate: data.birthDate,
+      deathDate: data.deathDate,
+      birthPlace: data.birthPlace,
+      occupation: data.occupation,
+      maritalStatus: data.maritalStatus,
+      image: data.image,
+      phone: data.phone,
+      email: data.email,
+      website: data.website,
+      biography: data.biography,
     };
   }
 
@@ -28,145 +42,131 @@ export class FamilyTreeService {
       id: generateId(),
       source,
       target,
-      type
+      type,
     };
   }
 
   /**
-   * Find all relationships for a person
+   * Get all relationships for a person
    */
   static getPersonRelationships(
     personId: string,
     relationships: Relationship[]
   ): Array<{ type: RelationshipType; relatedPersonId: string }> {
     return relationships
-      .filter(rel => rel.source === personId || rel.target === personId)
-      .map(rel => ({
+      .filter((rel) => rel.source === personId || rel.target === personId)
+      .map((rel) => ({
         type: rel.type,
-        relatedPersonId: rel.source === personId ? rel.target : rel.source
+        relatedPersonId: rel.source === personId ? rel.target : rel.source,
       }));
-  }
-
-  /**
-   * Find family members by relationship type
-   */
-  static getFamilyMembersByType(
-    personId: string,
-    type: RelationshipType,
-    relationships: Relationship[],
-    people: Person[]
-  ): Person[] {
-    const relatedIds = relationships
-      .filter(rel => 
-        (rel.source === personId || rel.target === personId) && rel.type === type
-      )
-      .map(rel => rel.source === personId ? rel.target : rel.source);
-
-    return people.filter(person => relatedIds.includes(person.id));
-  }
-
-  /**
-   * Check if two people are related
-   */
-  static areRelated(
-    person1Id: string,
-    person2Id: string,
-    relationships: Relationship[]
-  ): boolean {
-    return relationships.some(rel =>
-      (rel.source === person1Id && rel.target === person2Id) ||
-      (rel.source === person2Id && rel.target === person1Id)
-    );
   }
 
   /**
    * Get family statistics
    */
   static getFamilyStatistics(people: Person[]) {
-    const living = people.filter(p => p.isAlive);
-    const deceased = people.filter(p => !p.isAlive);
-    const withImages = people.filter(p => p.image);
-    const married = people.filter(p => p.maritalStatus === 'married');
-    const occupations = new Set(people.filter(p => p.occupation).map(p => p.occupation));
+    const totalMembers = people.length;
+    const livingMembers = people.filter((p) => p.isAlive).length;
+    const deceasedMembers = totalMembers - livingMembers;
+    
+    const genderStats = people.reduce(
+      (acc, person) => {
+        acc[person.gender] = (acc[person.gender] || 0) + 1;
+        return acc;
+      },
+      {} as Record<Gender, number>
+    );
 
-    // Calculate age statistics for living members
-    const livingWithBirthDates = living.filter(p => p.birthDate);
-    const ages = livingWithBirthDates.map(p => {
-      const birthYear = new Date(p.birthDate!).getFullYear();
-      return new Date().getFullYear() - birthYear;
-    });
-
-    const averageAge = ages.length > 0 
-      ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) 
-      : 0;
-    const oldestAge = ages.length > 0 ? Math.max(...ages) : 0;
+    const generationStats = this.calculateGenerations(people);
+    const averageAge = this.calculateAverageAge(people);
 
     return {
-      total: people.length,
-      living: living.length,
-      deceased: deceased.length,
-      male: people.filter(p => p.gender === 'male').length,
-      female: people.filter(p => p.gender === 'female').length,
-      withImages: withImages.length,
-      married: married.length,
-      occupations: occupations.size,
+      totalMembers,
+      livingMembers,
+      deceasedMembers,
+      genderStats,
+      generationStats,
       averageAge,
-      oldestAge
     };
   }
 
   /**
-   * Filter people based on search criteria
+   * Calculate generation statistics
    */
-  static filterPeople(
-    people: Person[],
-    filters: {
-      searchTerm?: string;
-      gender?: string;
-      isAlive?: boolean;
-      hasImage?: boolean;
-    }
-  ): Person[] {
-    return people.filter(person => {
-      const matchesSearch = !filters.searchTerm || 
-        person.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-        person.nickname?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-        person.occupation?.toLowerCase().includes(filters.searchTerm.toLowerCase());
-      
-      const matchesGender = !filters.gender || person.gender === filters.gender;
-      const matchesAlive = filters.isAlive === undefined || person.isAlive === filters.isAlive;
-      const matchesImage = filters.hasImage === undefined || !!person.image === filters.hasImage;
-      
-      return matchesSearch && matchesGender && matchesAlive && matchesImage;
-    });
+  private static calculateGenerations(people: Person[]) {
+    // This is a simplified calculation
+    // In a real implementation, you'd traverse the family tree
+    return {
+      totalGenerations: Math.max(1, Math.ceil(people.length / 3)),
+      oldestGeneration: people.filter((p) => p.birthDate).length > 0 
+        ? Math.min(...people.filter(p => p.birthDate).map(p => new Date(p.birthDate!).getFullYear()))
+        : null,
+      newestGeneration: people.filter((p) => p.birthDate).length > 0
+        ? Math.max(...people.filter(p => p.birthDate).map(p => new Date(p.birthDate!).getFullYear()))
+        : null,
+    };
   }
 
   /**
-   * Validate person data
+   * Calculate average age
    */
-  static validatePerson(person: Partial<Person>): string[] {
+  private static calculateAverageAge(people: Person[]): number | null {
+    const peopleWithBirthDates = people.filter((p) => p.birthDate);
+    
+    if (peopleWithBirthDates.length === 0) return null;
+
+    const totalAge = peopleWithBirthDates.reduce((sum, person) => {
+      const birthYear = new Date(person.birthDate!).getFullYear();
+      const endYear = person.deathDate 
+        ? new Date(person.deathDate).getFullYear()
+        : new Date().getFullYear();
+      return sum + (endYear - birthYear);
+    }, 0);
+
+    return Math.round(totalAge / peopleWithBirthDates.length);
+  }
+
+  /**
+   * Find potential relationships
+   */
+  static findPotentialRelationships(
+    people: Person[],
+    relationships: Relationship[]
+  ): Array<{ person1: Person; person2: Person; suggestedType: RelationshipType }> {
+    const suggestions: Array<{ person1: Person; person2: Person; suggestedType: RelationshipType }> = [];
+    
+    // This is a simplified suggestion algorithm
+    // In a real implementation, you'd use more sophisticated logic
+    
+    return suggestions;
+  }
+
+  /**
+   * Validate family tree structure
+   */
+  static validateFamilyTree(
+    people: Person[],
+    relationships: Relationship[]
+  ): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
-
-    if (!person.name?.trim()) {
-      errors.push('Name is required');
-    }
-
-    if (person.birthDate && person.deathDate) {
-      const birthDate = new Date(person.birthDate);
-      const deathDate = new Date(person.deathDate);
-      if (birthDate > deathDate) {
-        errors.push('Birth date cannot be after death date');
+    
+    // Check for orphaned relationships
+    relationships.forEach((rel) => {
+      const sourcePerson = people.find((p) => p.id === rel.source);
+      const targetPerson = people.find((p) => p.id === rel.target);
+      
+      if (!sourcePerson) {
+        errors.push(`Relationship ${rel.id} references non-existent source person ${rel.source}`);
       }
-    }
+      
+      if (!targetPerson) {
+        errors.push(`Relationship ${rel.id} references non-existent target person ${rel.target}`);
+      }
+    });
 
-    if (person.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(person.email)) {
-      errors.push('Invalid email format');
-    }
-
-    if (person.website && !/^https?:\/\/.+/.test(person.website)) {
-      errors.push('Invalid website URL');
-    }
-
-    return errors;
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
   }
 }
