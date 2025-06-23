@@ -1,10 +1,13 @@
+
 /**
  * Layout controls component
  */
 
 import React from 'react';
 import { LayoutSelector } from '../molecules/LayoutSelector';
-import { useLayout } from '../../hooks/useLayout';
+import { useUIStore } from '../../stores/uiStore';
+import { useFamilyTreeStore } from '../../stores/familyTreeStore';
+import { LAYOUT_OPTIONS } from '../../constants';
 
 interface LayoutControlsProps {
   className?: string;
@@ -18,11 +21,18 @@ export const LayoutControls: React.FC<LayoutControlsProps> = ({
     nodeViewMode,
     showStatistics,
     isFullscreen,
-    setLayout,
-    setViewMode,
+    setCurrentLayout,
+    setNodeViewMode,
     toggleStatistics,
     toggleFullscreen,
-  } = useLayout();
+  } = useUIStore();
+
+  const { applyLayout } = useFamilyTreeStore();
+
+  const handleLayoutChange = (layout: string) => {
+    setCurrentLayout(layout as any);
+    applyLayout(layout);
+  };
 
   return (
     <div className={className}>
@@ -31,8 +41,8 @@ export const LayoutControls: React.FC<LayoutControlsProps> = ({
         nodeViewMode={nodeViewMode}
         showStatistics={showStatistics}
         isFullscreen={isFullscreen}
-        onLayoutChange={setLayout}
-        onViewModeChange={setViewMode}
+        onLayoutChange={handleLayoutChange}
+        onViewModeChange={setNodeViewMode}
         onToggleStatistics={toggleStatistics}
         onToggleFullscreen={toggleFullscreen}
       />

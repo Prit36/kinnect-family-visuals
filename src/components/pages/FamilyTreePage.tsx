@@ -13,7 +13,8 @@ import { StatisticsPanel } from '../organisms/StatisticsPanel';
 import { ExportImportControls } from '../organisms/ExportImportControls';
 import { LayoutControls } from '../organisms/LayoutControls';
 import { PersonDetailPanel } from '../organisms/PersonDetailPanel';
-import { useFamilyTree } from '../../hooks/useFamilyTree';
+import { useFamilyTreeStore } from '../../stores/familyTreeStore';
+import { useUIStore } from '../../stores/uiStore';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useToast } from '../../hooks/use-toast';
 import { extractSharedDataFromUrl, cleanUrl } from '../../utils';
@@ -23,11 +24,14 @@ export const FamilyTreePage: React.FC = () => {
   const [isAddPersonModalOpen, setIsAddPersonModalOpen] = useState(false);
   const {
     people,
+    importData,
+  } = useFamilyTreeStore();
+  
+  const {
     selectedNodeId,
     showStatistics,
     isFullscreen,
-    importData,
-  } = useFamilyTree();
+  } = useUIStore();
   
   const { darkMode } = useTheme();
   const { toast } = useToast();

@@ -1,3 +1,4 @@
+
 /**
  * Search and filters component
  */
@@ -5,7 +6,7 @@
 import React from 'react';
 import { SearchInput } from '../molecules/SearchInput';
 import { FilterDropdown } from '../molecules/FilterDropdown';
-import { useSearch } from '../../hooks/useSearch';
+import { useSearchStore } from '../../stores/searchStore';
 
 interface SearchAndFiltersProps {
   className?: string;
@@ -19,13 +20,19 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
     gender,
     isAlive,
     hasImage,
-    hasActiveFilters,
     setSearchTerm,
     setGenderFilter,
     setAliveFilter,
     setImageFilter,
     clearFilters,
-  } = useSearch();
+  } = useSearchStore();
+
+  const hasActiveFilters = Boolean(
+    searchTerm ||
+    gender ||
+    isAlive !== undefined ||
+    hasImage !== undefined
+  );
 
   return (
     <div className={`flex items-center space-x-2 ${className}`}>

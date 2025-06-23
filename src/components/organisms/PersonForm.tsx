@@ -31,7 +31,7 @@ import { User, Calendar, MapPin, Briefcase, Phone, Mail, Globe } from 'lucide-re
 import { FormField } from '../molecules/FormField';
 import { ImageUpload } from '../molecules/ImageUpload';
 import { usePersonForm } from '../../hooks/usePersonForm';
-import { useFamilyTree } from '../../hooks/useFamilyTree';
+import { useFamilyTreeStore } from '../../stores/familyTreeStore';
 import type { PersonFormData, RelationshipType, Gender, MaritalStatus } from '../../types';
 import { GENDER_OPTIONS, MARITAL_STATUS_OPTIONS, RELATIONSHIP_TYPE_OPTIONS } from '../../constants';
 
@@ -48,7 +48,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
   initialData,
   mode = 'add',
 }) => {
-  const { people, addPerson, updatePerson } = useFamilyTree();
+  const { people, addPerson, updatePerson } = useFamilyTreeStore();
 
   const handleSubmit = async (data: PersonFormData) => {
     if (mode === 'add') {
@@ -56,9 +56,17 @@ export const PersonForm: React.FC<PersonFormProps> = ({
         ? { personId: data.selectedPerson, type: data.relationshipType }
         : undefined;
 
-      await addPerson(data, relationshipData);
+      const personId = addPerson(data);
+      
+      if (relationshipData) {
+        useFamilyTreeStore.getState().addRelationship(
+          relationshipData.personId,
+          personId,
+          relationshipData.type
+        );
+      }
     } else if (initialData?.id) {
-      await updatePerson(initialData.id, data);
+      updatePerson(initialData.id, data);
     }
     
     onClose();

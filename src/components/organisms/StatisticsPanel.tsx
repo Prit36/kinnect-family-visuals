@@ -1,3 +1,4 @@
+
 /**
  * Statistics panel component
  */
@@ -5,7 +6,7 @@
 import React from 'react';
 import { Users, Heart, Skull, Briefcase } from 'lucide-react';
 import { StatCard } from '../molecules/StatCard';
-import { useFamilyTree } from '../../hooks/useFamilyTree';
+import { useFamilyTreeStore } from '../../stores/familyTreeStore';
 
 interface StatisticsPanelProps {
   className?: string;
@@ -14,7 +15,8 @@ interface StatisticsPanelProps {
 export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
   className,
 }) => {
-  const { statistics } = useFamilyTree();
+  const { getFamilyStatistics } = useFamilyTreeStore();
+  const statistics = getFamilyStatistics();
 
   return (
     <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 ${className}`}>

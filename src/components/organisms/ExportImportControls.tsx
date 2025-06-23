@@ -13,8 +13,10 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { useFamilyTree } from '../../hooks/useFamilyTree';
+import { useFamilyTreeStore } from '../../stores/familyTreeStore';
 import { ExportService } from '../../services/exportService';
+import { useToast } from '../../hooks/use-toast';
+import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '../../constants';
 
 interface ExportImportControlsProps {
   className?: string;
@@ -24,7 +26,42 @@ export const ExportImportControls: React.FC<ExportImportControlsProps> = ({
   className,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { exportData, importData, shareData } = useFamilyTree();
+  const { exportData, importData } = useFamilyTreeStore();
+  const { toast } = useToast();
+
+  const handleExportData = async () => {
+    try {
+      const { people, relationships } = exportData();
+      ExportService.exportAsJSON(people, relationships);
+      
+      toast({
+        title: SUCCESS_MESSAGES.DATA_EXPORTED,
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: ERROR_MESSAGES.GENERAL.UNEXPECTED_ERROR,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleShareData = async () => {
+    try {
+      const { people, relationships } = exportData();
+      await ExportService.copyShareableLink(people, relationships);
+      
+      toast({
+        title: SUCCESS_MESSAGES.LINK_COPIED,
+      });
+    } catch (error) {
+      toast({
+        title: "Share Failed",
+        description: ERROR_MESSAGES.GENERAL.UNEXPECTED_ERROR,
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -36,8 +73,17 @@ export const ExportImportControls: React.FC<ExportImportControlsProps> = ({
       try {
         const data = await ExportService.importFromJSON(file);
         importData(data.people, data.relationships);
+        
+        toast({
+          title: SUCCESS_MESSAGES.DATA_IMPORTED,
+        });
       } catch (error) {
         console.error('Import failed:', error);
+        toast({
+          title: "Import Failed",
+          description: error instanceof Error ? error.message : ERROR_MESSAGES.GENERAL.UNEXPECTED_ERROR,
+          variant: "destructive",
+        });
       }
     }
     // Reset input
@@ -54,7 +100,7 @@ export const ExportImportControls: React.FC<ExportImportControlsProps> = ({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={exportData}>
+          <DropdownMenuItem onClick={handleExportData}>
             <Download size={16} className="mr-2" />
             Export as JSON
           </DropdownMenuItem>
@@ -63,7 +109,7 @@ export const ExportImportControls: React.FC<ExportImportControlsProps> = ({
             Import from JSON
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={shareData}>
+          <DropdownMenuItem onClick={handleShareData}>
             <Share size={16} className="mr-2" />
             Share Link
           </DropdownMenuItem>

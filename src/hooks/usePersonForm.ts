@@ -38,7 +38,10 @@ export const usePersonForm = ({ initialData, onSubmit, onCancel }: UsePersonForm
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState(initialData?.image || '');
 
-  const updateField = useCallback((field: keyof PersonFormData, value: any) => {
+  const updateField = useCallback(<K extends keyof PersonFormData>(
+    field: K, 
+    value: PersonFormData[K]
+  ) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
     // Clear errors when user starts typing
