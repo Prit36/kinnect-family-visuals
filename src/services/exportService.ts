@@ -1,9 +1,10 @@
+
 /**
  * Export/Import service for family tree data
  */
 
 import { Person, Relationship, ExportData } from '../types';
-import { createExportData, validateImportData, generateShareableUrl } from '../utils';
+import { createExportData, validateImportData, createShareableUrl } from '../utils';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../constants';
 
 export class ExportService {
@@ -67,7 +68,7 @@ export class ExportService {
     try {
       const exportData = createExportData(people, relationships);
       const dataStr = JSON.stringify(exportData);
-      return generateShareableUrl(dataStr);
+      return createShareableUrl(dataStr);
     } catch (error) {
       throw new Error(ERROR_MESSAGES.GENERAL.UNEXPECTED_ERROR);
     }

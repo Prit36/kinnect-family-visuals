@@ -1,3 +1,4 @@
+
 /**
  * Export and import controls component
  */
@@ -13,6 +14,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { useFamilyTree } from '../../hooks/useFamilyTree';
+import { ExportService } from '../../services/exportService';
 
 interface ExportImportControlsProps {
   className?: string;
@@ -28,10 +30,15 @@ export const ExportImportControls: React.FC<ExportImportControlsProps> = ({
     fileInputRef.current?.click();
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      importData(file);
+      try {
+        const data = await ExportService.importFromJSON(file);
+        importData(data.people, data.relationships);
+      } catch (error) {
+        console.error('Import failed:', error);
+      }
     }
     // Reset input
     event.target.value = '';

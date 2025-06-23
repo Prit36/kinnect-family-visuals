@@ -1,3 +1,4 @@
+
 /**
  * Family tree business logic service
  */
@@ -12,20 +13,20 @@ export class FamilyTreeService {
   static createPerson(data: Omit<Person, 'id'>): Person {
     return {
       id: generateId(),
-      name: data.name || '',
-      gender: data.gender || 'male',
-      isAlive: data.isAlive !== undefined ? data.isAlive : true,
-      nickname: data.nickname || '',
-      birthDate: data.birthDate || '',
-      deathDate: data.deathDate || '',
-      birthPlace: data.birthPlace || '',
-      occupation: data.occupation || '',
+      name: (data.name as string) || '',
+      gender: (data.gender as Gender) || 'male',
+      isAlive: (data.isAlive as boolean) !== undefined ? (data.isAlive as boolean) : true,
+      nickname: (data.nickname as string) || '',
+      birthDate: (data.birthDate as string) || '',
+      deathDate: (data.deathDate as string) || '',
+      birthPlace: (data.birthPlace as string) || '',
+      occupation: (data.occupation as string) || '',
       maritalStatus: data.maritalStatus || undefined,
-      image: data.image || '',
-      phone: data.phone || '',
-      email: data.email || '',
-      website: data.website || '',
-      biography: data.biography || '',
+      image: (data.image as string) || '',
+      phone: (data.phone as string) || '',
+      email: (data.email as string) || '',
+      website: (data.website as string) || '',
+      biography: (data.biography as string) || '',
     };
   }
 
@@ -58,6 +59,53 @@ export class FamilyTreeService {
         type: rel.type,
         relatedPersonId: rel.source === personId ? rel.target : rel.source,
       }));
+  }
+
+  /**
+   * Filter people based on search criteria
+   */
+  static filterPeople(
+    people: Person[],
+    filters: {
+      searchTerm?: string;
+      gender?: Gender;
+      isAlive?: boolean;
+      hasImage?: boolean;
+    }
+  ): Person[] {
+    return people.filter((person) => {
+      // Search term filter
+      if (filters.searchTerm && filters.searchTerm.trim()) {
+        const searchLower = filters.searchTerm.toLowerCase();
+        const matches = 
+          person.name.toLowerCase().includes(searchLower) ||
+          (person.nickname && person.nickname.toLowerCase().includes(searchLower)) ||
+          (person.occupation && person.occupation.toLowerCase().includes(searchLower)) ||
+          (person.birthPlace && person.birthPlace.toLowerCase().includes(searchLower));
+        
+        if (!matches) return false;
+      }
+
+      // Gender filter
+      if (filters.gender && person.gender !== filters.gender) {
+        return false;
+      }
+
+      // Alive status filter
+      if (filters.isAlive !== undefined && person.isAlive !== filters.isAlive) {
+        return false;
+      }
+
+      // Image filter
+      if (filters.hasImage !== undefined) {
+        const hasImage = Boolean(person.image && person.image.trim());
+        if (hasImage !== filters.hasImage) {
+          return false;
+        }
+      }
+
+      return true;
+    });
   }
 
   /**
