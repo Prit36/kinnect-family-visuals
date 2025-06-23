@@ -1,3 +1,4 @@
+
 /**
  * Main family tree page component
  */
@@ -33,7 +34,6 @@ export const FamilyTreePage: React.FC = () => {
     isFullscreen,
   } = useUIStore();
   
-  const { darkMode } = useTheme();
   const { toast } = useToast();
 
   // Check for shared data in URL
@@ -73,12 +73,12 @@ export const FamilyTreePage: React.FC = () => {
             <TreePine className="w-10 h-10 text-green-600 dark:text-green-400" />
           </div>
           <div>
-            <h1 className={`text-3xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+            <h1 className="text-3xl font-bold text-blue-600 dark:text-blue-400">
               Family Tree Visualizer
             </h1>
             {people.length > 0 && (
               <div className="flex items-center space-x-4 mt-1">
-                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
                   <span className="font-semibold text-blue-500">{people.length}</span>{' '}
                   member{people.length !== 1 ? 's' : ''} •
                   <span className="font-semibold text-green-500 ml-1">
@@ -115,16 +115,12 @@ export const FamilyTreePage: React.FC = () => {
   const renderEmptyState = () => (
     <div className="text-center max-w-2xl px-6 m-auto">
       <div className="relative mb-8">
-        <TreePine
-          className={`w-32 h-32 mx-auto relative ${
-            darkMode ? 'text-gray-500' : 'text-gray-400'
-          }`}
-        />
+        <TreePine className="w-32 h-32 mx-auto relative text-gray-400 dark:text-gray-500" />
       </div>
-      <h2 className={`text-5xl font-bold mb-6 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+      <h2 className="text-5xl font-bold mb-6 text-blue-600 dark:text-blue-400">
         Build Your Family Tree
       </h2>
-      <p className={`text-xl mb-8 leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+      <p className="text-xl mb-8 leading-relaxed text-gray-600 dark:text-gray-300">
         Create a beautiful, interactive digital family tree with rich profiles, stunning
         visualizations, and detailed family connections. Preserve your family's legacy with
         modern design and intuitive features.
@@ -137,7 +133,7 @@ export const FamilyTreePage: React.FC = () => {
         <Plus size={24} className="mr-3" />
         Add Your First Family Member
       </Button>
-      <div className={`mt-10 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'} space-y-2`}>
+      <div className="mt-10 text-sm text-gray-500 dark:text-gray-400 space-y-2">
         <p className="font-semibold text-lg mb-4">✨ Amazing Features:</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left max-w-xl mx-auto">
           {[
@@ -159,16 +155,12 @@ export const FamilyTreePage: React.FC = () => {
   );
 
   const renderQuickGuide = () => (
-    <div
-      className={`fixed bottom-4 left-16 rounded-2xl shadow-xl p-6 max-w-sm z-10 border transition-all duration-300 hover:shadow-2xl ${
-        darkMode ? 'bg-gray-800 border-gray-600 text-gray-200' : 'bg-white border-gray-200'
-      }`}
-    >
-      <h3 className={`font-bold text-lg mb-4 flex items-center ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+    <div className="fixed bottom-4 left-16 rounded-2xl shadow-xl p-6 max-w-sm z-10 border transition-all duration-300 hover:shadow-2xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600">
+      <h3 className="font-bold text-lg mb-4 flex items-center text-gray-900 dark:text-gray-100">
         <Settings size={20} className="mr-2 text-blue-500" />
         Quick Guide
       </h3>
-      <ul className={`text-sm space-y-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+      <ul className="text-sm space-y-2 text-gray-600 dark:text-gray-300">
         {[
           { color: 'blue', action: 'Click', description: 'nodes to view detailed information' },
           { color: 'green', action: 'Drag', description: 'nodes to reposition them' },
