@@ -1,3 +1,4 @@
+
 /**
  * Full image person node component
  */
@@ -94,8 +95,7 @@ export const PersonNodeFullImage: React.FC<PersonNodeProps> = memo(
             <div
               className="absolute bottom-0 left-0 w-full p-2 rounded-b-2xl text-white"
               style={{
-                backgroundImage:
-                  'linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0))',
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
               }}
             >
               <h3 className="font-bold text-xl text-center leading-snug">
@@ -177,10 +177,7 @@ export const PersonNodeFullImage: React.FC<PersonNodeProps> = memo(
                   />
                   <IconButton
                     icon={<Trash2 size={14} />}
-                    onClick={(e) => {
-                      handleActionClick(e);
-                      removePerson(id);
-                    }}
+                    onClick={handleActionClick}
                     tooltip="Remove Person"
                     variant="destructive"
                     size="sm"

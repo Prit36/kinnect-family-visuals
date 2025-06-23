@@ -1,3 +1,4 @@
+
 /**
  * Normal person node component
  */
@@ -77,7 +78,7 @@ export const PersonNode: React.FC<PersonNodeProps> = memo(
             <div className="relative mb-3">
               <Avatar person={data} size="xl" showStatusRing />
               {data.maritalStatus === 'married' && (
-                <div className="absolute -bottom-1 -right-1 bg-gradient-to-tr from-amber-400 to-yellow-500 rounded-full p-1 shadow-md border-2 border-white dark:border-gray-800">
+                <div className="absolute -bottom-1 -right-1 bg-yellow-500 rounded-full p-1 shadow-md border-2 border-white dark:border-gray-800">
                   <Star size={12} className="text-white" />
                 </div>
               )}
@@ -170,10 +171,7 @@ export const PersonNode: React.FC<PersonNodeProps> = memo(
                   />
                   <IconButton
                     icon={<Trash2 size={14} />}
-                    onClick={(e) => {
-                      handleActionClick(e);
-                      removePerson(id);
-                    }}
+                    onClick={handleActionClick}
                     tooltip="Remove Person"
                     variant="destructive"
                     size="sm"

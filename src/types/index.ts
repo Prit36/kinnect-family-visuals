@@ -26,6 +26,8 @@ export interface Person {
   email?: string;
   website?: string;
   biography?: string;
+  // Add index signature for React Flow compatibility
+  [key: string]: unknown;
 }
 
 export interface Relationship {
@@ -85,6 +87,7 @@ export interface UIState {
 
 // Form Types
 export interface PersonFormData extends Omit<Person, 'id'> {
+  id?: string; // Make id optional for add mode, required for edit mode
   selectedPerson?: string;
   relationshipType?: RelationshipType;
 }
