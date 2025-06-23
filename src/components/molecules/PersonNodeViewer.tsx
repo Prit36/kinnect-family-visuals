@@ -1,3 +1,4 @@
+
 /**
  * Person node viewer component that switches between view modes
  */
@@ -6,7 +7,7 @@ import React from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { PersonNode } from './PersonNode';
 import { PersonNodeFullImage } from './PersonNodeFullImage';
-import { useFamilyTree } from '../../hooks/useFamilyTree';
+import { useUIStore } from '../../stores/uiStore';
 import { Person } from '../../types';
 
 interface PersonNodeViewerProps {
@@ -20,7 +21,7 @@ export const PersonNodeViewer: React.FC<PersonNodeViewerProps> = ({
   data,
   selected,
 }) => {
-  const { nodeViewMode } = useFamilyTree();
+  const { nodeViewMode } = useUIStore();
 
   return (
     <>

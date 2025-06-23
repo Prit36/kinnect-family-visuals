@@ -10,7 +10,8 @@ import { Person } from '../../types';
 import { Avatar } from '../atoms/Avatar';
 import { IconButton } from '../atoms/IconButton';
 import { formatLifespan, getInitials, getAvatarBackgroundColor } from '../../utils';
-import { useFamilyTree } from '../../hooks/useFamilyTree';
+import { useUIStore } from '../../stores/uiStore';
+import { useFamilyTreeStore } from '../../stores/familyTreeStore';
 import {
   Edit,
   Trash2,
@@ -31,10 +32,11 @@ interface PersonNodeProps {
 
 export const PersonNodeFullImage: React.FC<PersonNodeProps> = memo(
   ({ data, id, selected }) => {
-    const { setSelectedNode, removePerson } = useFamilyTree();
+    const { setSelectedNodeId } = useUIStore();
+    const { removePerson } = useFamilyTreeStore();
 
     const handleNodeClick = () => {
-      setSelectedNode(selected ? null : id);
+      setSelectedNodeId(selected ? null : id);
     };
 
     const handleEditClick = () => {

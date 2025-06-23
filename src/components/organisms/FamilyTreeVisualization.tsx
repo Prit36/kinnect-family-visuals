@@ -18,7 +18,9 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { PersonNodeViewer } from '../molecules/PersonNodeViewer';
-import { useFamilyTree } from '../../hooks/useFamilyTree';
+import { useFamilyTreeStore } from '../../stores/familyTreeStore';
+import { useSearchStore } from '../../stores/searchStore';
+import { useUIStore } from '../../stores/uiStore';
 import { useTheme } from '../../contexts/ThemeContext';
 import { THEME_CONFIG } from '../../constants';
 
@@ -36,11 +38,11 @@ export const FamilyTreeVisualization: React.FC<FamilyTreeVisualizationProps> = (
   const {
     nodes,
     edges,
-    filteredPeople,
     people,
-    searchFilters,
-    setSelectedNode,
-  } = useFamilyTree();
+  } = useFamilyTreeStore();
+  
+  const { filteredPeople, searchFilters } = useSearchStore();
+  const { setSelectedNodeId } = useUIStore();
   
   const { darkMode } = useTheme();
   
@@ -96,8 +98,8 @@ export const FamilyTreeVisualization: React.FC<FamilyTreeVisualizationProps> = (
   );
 
   const onPaneClick = useCallback(() => {
-    setSelectedNode(null);
-  }, [setSelectedNode]);
+    setSelectedNodeId(null);
+  }, [setSelectedNodeId]);
 
   const miniMapStyle = useMemo(
     () => ({

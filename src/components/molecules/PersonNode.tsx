@@ -11,7 +11,8 @@ import { Avatar } from '../atoms/Avatar';
 import { StatusIndicator } from '../atoms/StatusIndicator';
 import { IconButton } from '../atoms/IconButton';
 import { formatLifespan, calculateAge } from '../../utils';
-import { useFamilyTree } from '../../hooks/useFamilyTree';
+import { useUIStore } from '../../stores/uiStore';
+import { useFamilyTreeStore } from '../../stores/familyTreeStore';
 import {
   Edit,
   Trash2,
@@ -33,10 +34,11 @@ interface PersonNodeProps {
 
 export const PersonNode: React.FC<PersonNodeProps> = memo(
   ({ data, id, selected }) => {
-    const { setSelectedNode, removePerson } = useFamilyTree();
+    const { setSelectedNodeId } = useUIStore();
+    const { removePerson } = useFamilyTreeStore();
 
     const handleNodeClick = () => {
-      setSelectedNode(selected ? null : id);
+      setSelectedNodeId(selected ? null : id);
     };
 
     const handleEditClick = () => {
