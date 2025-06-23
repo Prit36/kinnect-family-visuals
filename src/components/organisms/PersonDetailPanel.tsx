@@ -1,5 +1,4 @@
 
-
 /**
  * Person detail panel component
  */
@@ -77,8 +76,7 @@ export const PersonDetailPanel: React.FC = () => {
               <CardContent className="p-4">
                 <div className="flex items-center space-x-4">
                   <Avatar
-                    src={person.image}
-                    alt={person.name}
+                    person={person}
                     size="lg"
                     className="w-16 h-16"
                   />
@@ -234,8 +232,7 @@ export const PersonDetailPanel: React.FC = () => {
                       <div key={index} className="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-700">
                         <div className="flex items-center space-x-3">
                           <Avatar
-                            src={relatedPerson.image}
-                            alt={relatedPerson.name}
+                            person={relatedPerson}
                             size="sm"
                             className="w-8 h-8"
                           />
@@ -268,4 +265,3 @@ export const PersonDetailPanel: React.FC = () => {
     </div>
   );
 };
-
