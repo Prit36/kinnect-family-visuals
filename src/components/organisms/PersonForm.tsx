@@ -1,4 +1,5 @@
 
+
 /**
  * Person form component for adding/editing family members
  */
@@ -62,22 +63,22 @@ export const PersonForm: React.FC<PersonFormProps> = ({
   const form = useForm<PersonFormSchema>({
     resolver: zodResolver(personSchema),
     defaultValues: {
-      name: initialData?.name || '',
-      nickname: initialData?.nickname || '',
-      gender: initialData?.gender || 'male',
-      birthDate: initialData?.birthDate || '',
-      deathDate: initialData?.deathDate || '',
-      birthPlace: initialData?.birthPlace || '',
-      occupation: initialData?.occupation || '',
-      maritalStatus: initialData?.maritalStatus,
-      isAlive: initialData?.isAlive !== undefined ? initialData.isAlive : true,
-      image: initialData?.image || '',
-      phone: initialData?.phone || '',
-      email: initialData?.email || '',
-      website: initialData?.website || '',
-      biography: initialData?.biography || '',
-      selectedPerson: initialData?.selectedPerson || '',
-      relationshipType: initialData?.relationshipType,
+      name: (initialData?.name as string) || '',
+      nickname: (initialData?.nickname as string) || '',
+      gender: (initialData?.gender as "male" | "female" | "other") || 'male',
+      birthDate: (initialData?.birthDate as string) || '',
+      deathDate: (initialData?.deathDate as string) || '',
+      birthPlace: (initialData?.birthPlace as string) || '',
+      occupation: (initialData?.occupation as string) || '',
+      maritalStatus: (initialData?.maritalStatus as "single" | "married" | "divorced" | "widowed") || undefined,
+      isAlive: (initialData?.isAlive as boolean) !== undefined ? (initialData.isAlive as boolean) : true,
+      image: (initialData?.image as string) || '',
+      phone: (initialData?.phone as string) || '',
+      email: (initialData?.email as string) || '',
+      website: (initialData?.website as string) || '',
+      biography: (initialData?.biography as string) || '',
+      selectedPerson: (initialData?.selectedPerson as string) || '',
+      relationshipType: (initialData?.relationshipType as RelationshipType) || undefined,
     },
   });
 
@@ -493,3 +494,4 @@ export const PersonForm: React.FC<PersonFormProps> = ({
     </Dialog>
   );
 };
+
