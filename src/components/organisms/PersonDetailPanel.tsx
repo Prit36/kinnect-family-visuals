@@ -1,3 +1,4 @@
+
 /**
  * Person detail panel component
  */
@@ -19,18 +20,19 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Avatar } from '../atoms/Avatar';
 import { StatusIndicator } from '../atoms/StatusIndicator';
-import { useFamilyTree } from '../../hooks/useFamilyTree';
+import { useFamilyTreeStore } from '../../stores/familyTreeStore';
+import { useUIStore } from '../../stores/uiStore';
 import { useTheme } from '../../contexts/ThemeContext';
 import { formatDate, calculateAge } from '../../utils';
 
 export const PersonDetailPanel: React.FC = () => {
   const {
-    selectedNodeId,
+    people,
     getPersonById,
     getRelationships,
-    people,
-    setSelectedNode,
-  } = useFamilyTree();
+  } = useFamilyTreeStore();
+  
+  const { selectedNodeId, setSelectedNode } = useUIStore();
   
   const { darkMode } = useTheme();
 

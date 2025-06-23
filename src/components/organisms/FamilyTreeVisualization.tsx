@@ -41,8 +41,8 @@ export const FamilyTreeVisualization: React.FC<FamilyTreeVisualizationProps> = (
     people,
   } = useFamilyTreeStore();
   
-  const { filteredPeople, searchFilters } = useSearchStore();
-  const { setSelectedNodeId } = useUIStore();
+  const { filteredPeople, searchTerm, gender, isAlive, hasImage } = useSearchStore();
+  const { setSelectedNode } = useUIStore();
   
   const { darkMode } = useTheme();
   
@@ -54,10 +54,10 @@ export const FamilyTreeVisualization: React.FC<FamilyTreeVisualizationProps> = (
 
   const visibleNodes = useMemo(() => {
     const hasActiveFilters = Boolean(
-      searchFilters.searchTerm ||
-      searchFilters.gender ||
-      searchFilters.isAlive !== undefined ||
-      searchFilters.hasImage !== undefined
+      searchTerm ||
+      gender ||
+      isAlive !== undefined ||
+      hasImage !== undefined
     );
 
     if (!hasActiveFilters) {
@@ -65,7 +65,7 @@ export const FamilyTreeVisualization: React.FC<FamilyTreeVisualizationProps> = (
     }
 
     return flowNodes.filter((node) => filteredNodeIds.has(node.id));
-  }, [flowNodes, filteredNodeIds, searchFilters]);
+  }, [flowNodes, filteredNodeIds, searchTerm, gender, isAlive, hasImage]);
 
   const visibleEdges = useMemo(() => {
     const visibleNodeIds = new Set(visibleNodes.map((node) => node.id));
@@ -98,8 +98,8 @@ export const FamilyTreeVisualization: React.FC<FamilyTreeVisualizationProps> = (
   );
 
   const onPaneClick = useCallback(() => {
-    setSelectedNodeId(null);
-  }, [setSelectedNodeId]);
+    setSelectedNode(null);
+  }, [setSelectedNode]);
 
   const miniMapStyle = useMemo(
     () => ({
@@ -162,10 +162,10 @@ export const FamilyTreeVisualization: React.FC<FamilyTreeVisualizationProps> = (
       </ReactFlow>
 
       {/* Search Results Counter */}
-      {(searchFilters.searchTerm ||
-        searchFilters.gender ||
-        searchFilters.isAlive !== undefined ||
-        searchFilters.hasImage !== undefined) && (
+      {(searchTerm ||
+        gender ||
+        isAlive !== undefined ||
+        hasImage !== undefined) && (
         <div
           className={`absolute top-4 left-4 z-10 px-4 py-2 rounded-lg shadow-lg ${
             darkMode

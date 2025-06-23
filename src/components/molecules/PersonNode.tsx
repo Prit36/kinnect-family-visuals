@@ -34,11 +34,11 @@ interface PersonNodeProps {
 
 export const PersonNode: React.FC<PersonNodeProps> = memo(
   ({ data, id, selected }) => {
-    const { setSelectedNodeId } = useUIStore();
+    const { setSelectedNode } = useUIStore();
     const { removePerson } = useFamilyTreeStore();
 
     const handleNodeClick = () => {
-      setSelectedNodeId(selected ? null : id);
+      setSelectedNode(selected ? null : id);
     };
 
     const handleEditClick = () => {
