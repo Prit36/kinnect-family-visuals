@@ -1,13 +1,12 @@
-
 /**
  * Layout controls component
  */
 
-import React from 'react';
-import { LayoutSelector } from '../molecules/LayoutSelector';
-import { useUIStore } from '../../stores/uiStore';
-import { useFamilyTreeStore } from '../../stores/familyTreeStore';
-import { LAYOUT_OPTIONS } from '../../constants';
+import React from "react";
+import { LayoutSelector } from "../molecules/LayoutSelector";
+import { useUIStore } from "../../stores/uiStore";
+import { useFamilyTreeStore } from "../../stores/familyTreeStore";
+import { LayoutType } from "@/types";
 
 interface LayoutControlsProps {
   className?: string;
@@ -29,8 +28,8 @@ export const LayoutControls: React.FC<LayoutControlsProps> = ({
 
   const { applyLayout } = useFamilyTreeStore();
 
-  const handleLayoutChange = (layout: string) => {
-    setCurrentLayout(layout as any);
+  const handleLayoutChange = (layout: LayoutType) => {
+    setCurrentLayout(layout);
     applyLayout(layout);
   };
 

@@ -2,7 +2,7 @@
  * Layout selector component
  */
 
-import React from 'react';
+import React from "react";
 import {
   Grid,
   Circle,
@@ -12,17 +12,17 @@ import {
   Maximize,
   Minimize,
   BarChart3,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { IconButton } from '../atoms/IconButton';
-import { LayoutType, NodeViewMode } from '../../types';
-import { LAYOUT_OPTIONS } from '../../constants';
+} from "@/components/ui/select";
+import { IconButton } from "../atoms/IconButton";
+import { LayoutType, NodeViewMode } from "../../types";
+import { LAYOUT_OPTIONS } from "../../constants";
 
 interface LayoutSelectorProps {
   currentLayout: LayoutType;
@@ -35,15 +35,15 @@ interface LayoutSelectorProps {
   onToggleFullscreen: () => void;
 }
 
-const getLayoutIcon = (layout: string) => {
+const getLayoutIcon = (layout: LayoutType) => {
   switch (layout) {
-    case 'hierarchical':
+    case "hierarchical":
       return <TreePine size={16} />;
-    case 'circular':
+    case "circular":
       return <Circle size={16} />;
-    case 'grid':
+    case "grid":
       return <Grid size={16} />;
-    case 'radial':
+    case "radial":
       return <Circle size={16} />;
     default:
       return <Shuffle size={16} />;
@@ -107,14 +107,14 @@ export const LayoutSelector: React.FC<LayoutSelectorProps> = ({
       <IconButton
         icon={<BarChart3 size={16} />}
         onClick={onToggleStatistics}
-        tooltip={showStatistics ? 'Hide Statistics' : 'Show Statistics'}
-        variant={showStatistics ? 'default' : 'outline'}
+        tooltip={showStatistics ? "Hide Statistics" : "Show Statistics"}
+        variant={showStatistics ? "default" : "outline"}
       />
 
       <IconButton
         icon={isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
         onClick={onToggleFullscreen}
-        tooltip={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+        tooltip={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
         variant="outline"
       />
     </div>

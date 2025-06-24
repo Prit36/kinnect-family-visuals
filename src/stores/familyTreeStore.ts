@@ -2,12 +2,18 @@
  * Family tree data store using Zustand
  */
 
-import { create } from 'zustand';
-import { subscribeWithSelector } from 'zustand/middleware';
-import { Person, Relationship, FamilyTreeNode, FamilyTreeEdge } from '../types';
-import { FamilyTreeService } from '../services/familyTreeService';
-import { LayoutService } from '../services/layoutService';
-import { generateId } from '../utils';
+import { create } from "zustand";
+import { subscribeWithSelector } from "zustand/middleware";
+import {
+  Person,
+  Relationship,
+  FamilyTreeNode,
+  FamilyTreeEdge,
+  LayoutType,
+} from "../types";
+import { FamilyTreeService } from "../services/familyTreeService";
+import { LayoutService } from "../services/layoutService";
+import { generateId } from "../utils";
 
 interface FamilyTreeState {
   // Data
@@ -15,27 +21,34 @@ interface FamilyTreeState {
   relationships: Relationship[];
   nodes: FamilyTreeNode[];
   edges: FamilyTreeEdge[];
-  
+
   // Actions
-  addPerson: (person: Omit<Person, 'id'>) => string;
+  addPerson: (person: Omit<Person, "id">) => string;
   updatePerson: (id: string, updates: Partial<Person>) => void;
   removePerson: (id: string) => void;
   addRelationship: (source: string, target: string, type: string) => void;
   removeRelationship: (id: string) => void;
-  updateNodePosition: (nodeId: string, position: { x: number; y: number }) => void;
-  
+  updateNodePosition: (
+    nodeId: string,
+    position: { x: number; y: number }
+  ) => void;
+
   // Getters
   getPersonById: (id: string) => Person | undefined;
-  getRelationships: (personId: string) => Array<{ type: string; relatedPersonId: string }>;
-  getFamilyStatistics: () => ReturnType<typeof FamilyTreeService.getFamilyStatistics>;
-  
+  getRelationships: (
+    personId: string
+  ) => Array<{ type: string; relatedPersonId: string }>;
+  getFamilyStatistics: () => ReturnType<
+    typeof FamilyTreeService.getFamilyStatistics
+  >;
+
   // Data operations
   importData: (people: Person[], relationships: Relationship[]) => void;
   exportData: () => { people: Person[]; relationships: Relationship[] };
   clearData: () => void;
-  
+
   // Layout operations
-  applyLayout: (layoutType: string) => void;
+  applyLayout: (layoutType: LayoutType) => void;
   regenerateNodes: () => void;
 }
 
@@ -50,14 +63,14 @@ export const useFamilyTreeStore = create<FamilyTreeState>()(
     // Actions
     addPerson: (personData) => {
       const newPerson = FamilyTreeService.createPerson(personData);
-      
+
       set((state) => ({
         people: [...state.people, newPerson],
       }));
-      
+
       // Regenerate nodes after adding person
       get().regenerateNodes();
-      
+
       return newPerson.id;
     },
 
@@ -67,11 +80,13 @@ export const useFamilyTreeStore = create<FamilyTreeState>()(
           person.id === id ? { ...person, ...updates } : person
         ),
       }));
-      
+
       // Update corresponding node
       set((state) => ({
         nodes: state.nodes.map((node) =>
-          node.id === id ? { ...node, data: { ...node.data, ...updates } } : node
+          node.id === id
+            ? { ...node, data: { ...node.data, ...updates } }
+            : node
         ),
       }));
     },
@@ -95,11 +110,11 @@ export const useFamilyTreeStore = create<FamilyTreeState>()(
         target,
         type as any
       );
-      
+
       set((state) => ({
         relationships: [...state.relationships, newRelationship],
       }));
-      
+
       // Regenerate edges
       get().regenerateNodes();
     },
@@ -161,12 +176,9 @@ export const useFamilyTreeStore = create<FamilyTreeState>()(
     // Layout operations
     applyLayout: (layoutType) => {
       const { nodes, edges } = get();
-      const { nodes: layoutedNodes, edges: layoutedEdges } = LayoutService.applyLayout(
-        layoutType as any,
-        nodes,
-        edges
-      );
-      
+      const { nodes: layoutedNodes, edges: layoutedEdges } =
+        LayoutService.applyLayout(layoutType, nodes, edges);
+
       set({
         nodes: layoutedNodes,
         edges: layoutedEdges,
@@ -175,11 +187,11 @@ export const useFamilyTreeStore = create<FamilyTreeState>()(
 
     regenerateNodes: () => {
       const { people, relationships } = get();
-      
+
       const nodes: FamilyTreeNode[] = people.map((person) => ({
         id: person.id,
         data: person,
-        type: 'person',
+        type: "person",
         position: { x: 0, y: 0 },
       }));
 
@@ -191,11 +203,8 @@ export const useFamilyTreeStore = create<FamilyTreeState>()(
       }));
 
       // Apply default hierarchical layout
-      const { nodes: layoutedNodes, edges: layoutedEdges } = LayoutService.applyLayout(
-        'hierarchical' as any,
-        nodes,
-        edges
-      );
+      const { nodes: layoutedNodes, edges: layoutedEdges } =
+        LayoutService.applyLayout("hierarchical", nodes, edges);
 
       set({
         nodes: layoutedNodes,
