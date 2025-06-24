@@ -1,4 +1,5 @@
 
+
 /**
  * Main family tree page component
  */
@@ -14,9 +15,9 @@ import { StatisticsPanel } from '../organisms/StatisticsPanel';
 import { ExportImportControls } from '../organisms/ExportImportControls';
 import { LayoutControls } from '../organisms/LayoutControls';
 import { PersonDetailPanel } from '../organisms/PersonDetailPanel';
+import { ThemeToggle } from '../atoms/ThemeToggle';
 import { useFamilyTreeStore } from '../../stores/familyTreeStore';
 import { useUIStore } from '../../stores/uiStore';
-import { useTheme } from '../../contexts/ThemeContext';
 import { useToast } from '../../hooks/use-toast';
 import { extractSharedDataFromUrl, cleanUrl } from '../../utils';
 import { SUCCESS_MESSAGES } from '../../constants';
@@ -99,6 +100,8 @@ export const FamilyTreePage: React.FC = () => {
               <ExportImportControls />
             </>
           )}
+
+          <ThemeToggle />
 
           <Button
             onClick={() => setIsAddPersonModalOpen(true)}
@@ -212,3 +215,4 @@ export const FamilyTreePage: React.FC = () => {
     </AppLayout>
   );
 };
+
